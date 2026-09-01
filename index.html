@@ -57,21 +57,21 @@
     .nav-tabs {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
-      margin: 1.5rem 1rem 0;
+      gap: 0.4rem;
+      margin: 1.25rem 0.75rem 0;
       flex-wrap: wrap;
     }
 
     .tab-btn {
       background: #ffffff;
       border: 1px solid var(--border);
-      padding: 0.6rem 1rem;
+      padding: 0.6rem 0.9rem;
       border-radius: 9999px;
       font-size: 0.85rem;
       font-weight: 600;
       color: var(--muted);
       cursor: pointer;
-      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .tab-btn.active {
@@ -83,7 +83,7 @@
     main {
       max-width: 600px;
       width: 100%;
-      margin: 1.5rem auto;
+      margin: 1.25rem auto;
       padding: 0 1rem;
       flex: 1;
     }
@@ -92,42 +92,51 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 2rem 1.5rem;
+      padding: 1.75rem 1.25rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       text-align: center;
     }
 
     .tool-title {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.35rem;
     }
 
     .tool-desc {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--muted);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
     }
 
+    /* Native Label Dropzone (100% Reliable on Mobile) */
     .dropzone {
+      display: block;
       border: 2px dashed #cbd5e1;
       border-radius: var(--radius);
-      padding: 2rem 1rem;
+      padding: 1.75rem 1rem;
       background: #f1f5f9;
       cursor: pointer;
-      transition: border-color 0.2s;
       margin-bottom: 1.25rem;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .dropzone:hover {
+    .dropzone:active {
+      background: #e2e8f0;
       border-color: var(--primary);
+    }
+
+    .dropzone-icon {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.4rem;
     }
 
     .dropzone p {
       font-size: 0.95rem;
-      font-weight: 600;
-      color: #334155;
-      margin-top: 0.5rem;
+      font-weight: 700;
+      color: #1e293b;
     }
 
     .dropzone span {
@@ -142,23 +151,19 @@
     .file-list {
       text-align: left;
       font-size: 0.85rem;
-      color: var(--muted);
+      color: var(--text);
       margin-bottom: 1.25rem;
       background: #f8fafc;
       padding: 0.75rem;
       border-radius: 8px;
       border: 1px solid var(--border);
+      word-break: break-all;
       display: none;
     }
 
-    .threshold-control {
+    .threshold-box {
       margin-bottom: 1.25rem;
       text-align: left;
-      font-size: 0.85rem;
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
       background: #f8fafc;
       padding: 0.85rem;
       border-radius: 8px;
@@ -167,8 +172,26 @@
 
     .slider {
       width: 100%;
+      height: 6px;
       accent-color: var(--primary);
+      margin: 0.5rem 0;
       cursor: pointer;
+    }
+
+    .guide-table {
+      width: 100%;
+      font-size: 0.75rem;
+      margin-top: 0.5rem;
+      border-collapse: collapse;
+    }
+
+    .guide-table td {
+      padding: 2px 0;
+      color: var(--muted);
+    }
+
+    .guide-table td strong {
+      color: var(--text);
     }
 
     .action-btn {
@@ -181,11 +204,6 @@
       font-weight: 700;
       border-radius: var(--radius);
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .action-btn:hover {
-      background: var(--primary-hover);
     }
 
     .action-btn:disabled {
@@ -195,7 +213,7 @@
 
     .status-msg {
       margin-top: 1rem;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
     }
 
@@ -209,6 +227,7 @@
       color: var(--muted);
       border-top: 1px solid var(--border);
       background: #ffffff;
+      margin-top: auto;
     }
   </style>
 </head>
@@ -218,139 +237,146 @@
     <a href="#" class="brand">Docu<span>Loom</span></a>
   </header>
 
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('cleaner', this)">🧼 Clean Watermark</button>
-    <button class="tab-btn" onclick="switchTab('nup', this)">📄 4 Pages in 1</button>
-    <button class="tab-btn" onclick="switchTab('merge', this)">📑 Merge PDFs</button>
-    <button class="tab-btn" onclick="switchTab('img2pdf', this)">🖼️ Images to PDF</button>
-    <button class="tab-btn" onclick="switchTab('split', this)">✂️ Split PDF</button>
-  </div>
+  <nav class="nav-tabs">
+    <button id="btn-tab-cleaner" class="tab-btn active" onclick="activateTab('cleaner')">🧼 Clean Watermark</button>
+    <button id="btn-tab-nup" class="tab-btn" onclick="activateTab('nup')">📄 4 Pages in 1</button>
+    <button id="btn-tab-merge" class="tab-btn" onclick="activateTab('merge')">📑 Merge</button>
+    <button id="btn-tab-img2pdf" class="tab-btn" onclick="activateTab('img2pdf')">🖼️ Images to PDF</button>
+    <button id="btn-tab-split" class="tab-btn" onclick="activateTab('split')">✂️ Split</button>
+  </nav>
 
   <main>
-    <div id="tab-cleaner" class="tool-card">
-      <h2 class="tool-title">Safe Watermark Remover & Text Enhancer</h2>
-      <p class="tool-desc">Erases background watermarks while preserving faint letters, numbers, and math symbols.</p>
+    <section id="tab-cleaner" class="tool-card">
+      <h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
+      <p class="tool-desc">Erases background watermarks and makes text dark for clean printing.</p>
 
-      <div class="dropzone" onclick="document.getElementById('cleaner-input').click()">
-        🧼
-        <p>Select PDF File with Watermark</p>
-        <span>Scanned notes, study materials, or textbooks</span>
-      </div>
+      <label class="dropzone" for="cleaner-input">
+        <span class="dropzone-icon">🧼</span>
+        <p>Tap Here to Select PDF</p>
+        <span>Upload your document or notes</span>
+      </label>
       <input type="file" id="cleaner-input" class="file-input" accept="application/pdf" onchange="handleCleanerFile(this.files)" />
 
       <div id="cleaner-files" class="file-list"></div>
 
-      <div class="threshold-control">
-        <label for="threshold-slider">
-          <strong>Cleaning Balance:</strong> <span id="threshold-val">168</span> 
-          <br><small style="color: var(--muted);">Set lower (140-160) for faint text | Set higher (170-190) for darker watermarks</small>
-        </label>
-        <input type="range" id="threshold-slider" class="slider" min="120" max="210" value="168" oninput="document.getElementById('threshold-val').innerText = this.value">
+      <div class="threshold-box">
+        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem;">
+          <span>Cleaning Intensity</span>
+          <span id="threshold-val" style="color:var(--primary);">168</span>
+        </div>
+        <input type="range" id="threshold-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('threshold-val').innerText = this.value">
+        <table class="guide-table">
+          <tr><td><strong>130–155:</strong></td><td>Very faint handwriting / light math formulas</td></tr>
+          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Default)</td></tr>
+          <tr><td><strong>180–210:</strong></td><td>Darker gray / colored watermarks</td></tr>
+        </table>
       </div>
 
       <button id="cleaner-btn" class="action-btn" disabled onclick="processWatermarkCleaning()">Remove Watermark & Download</button>
       <div id="cleaner-status" class="status-msg"></div>
-    </div>
+    </section>
 
-    <div id="tab-nup" class="tool-card" style="display: none;">
-      <h2 class="tool-title">Smart 4-in-1 Layout (Max Size)</h2>
-      <p class="tool-desc">Auto-fits slides into landscape sheets without blank gaps so letters remain large and legible.</p>
+    <section id="tab-nup" class="tool-card" style="display: none;">
+      <h2 class="tool-title">4 Pages in 1 Sheet (Print Layout)</h2>
+      <p class="tool-desc">Fits 4 lecture slides onto 1 page with large text and minimal white space.</p>
 
-      <div class="dropzone" onclick="document.getElementById('nup-input').click()">
-        📄
-        <p>Select PDF File</p>
-        <span>Lecture slides, notes, or handouts</span>
-      </div>
+      <label class="dropzone" for="nup-input">
+        <span class="dropzone-icon">📄</span>
+        <p>Tap Here to Select PDF</p>
+        <span>Slides, handouts, or notes</span>
+      </label>
       <input type="file" id="nup-input" class="file-input" accept="application/pdf" onchange="handleNupFile(this.files)" />
 
       <div id="nup-files" class="file-list"></div>
-      <button id="nup-btn" class="action-btn" disabled onclick="process4In1()">Convert & Auto-Fit 4-in-1</button>
+      <button id="nup-btn" class="action-btn" disabled onclick="process4In1()">Convert to 4-in-1 & Download</button>
       <div id="nup-status" class="status-msg"></div>
-    </div>
+    </section>
 
-    <div id="tab-merge" class="tool-card" style="display: none;">
+    <section id="tab-merge" class="tool-card" style="display: none;">
       <h2 class="tool-title">Merge PDF Files</h2>
-      <p class="tool-desc">Combine 2 or more PDFs into a single document.</p>
+      <p class="tool-desc">Combine multiple PDFs into a single document.</p>
 
-      <div class="dropzone" onclick="document.getElementById('merge-input').click()">
-        📁
-        <p>Select PDF Files</p>
-        <span>or drag & drop PDFs here</span>
-      </div>
+      <label class="dropzone" for="merge-input">
+        <span class="dropzone-icon">📁</span>
+        <p>Tap Here to Select Multiple PDFs</p>
+        <span>Select 2 or more files</span>
+      </label>
       <input type="file" id="merge-input" class="file-input" multiple accept="application/pdf" onchange="handleMergeFiles(this.files)" />
 
       <div id="merge-files" class="file-list"></div>
       <button id="merge-btn" class="action-btn" disabled onclick="processMerge()">Merge & Download</button>
       <div id="merge-status" class="status-msg"></div>
-    </div>
+    </section>
 
-    <div id="tab-img2pdf" class="tool-card" style="display: none;">
+    <section id="tab-img2pdf" class="tool-card" style="display: none;">
       <h2 class="tool-title">Convert Images to PDF</h2>
-      <p class="tool-desc">Turn JPG and PNG images into a clean PDF file.</p>
+      <p class="tool-desc">Turn JPG/PNG photos into a single PDF document.</p>
 
-      <div class="dropzone" onclick="document.getElementById('img-input').click()">
-        🖼️
-        <p>Select Image Files</p>
-        <span>JPG, PNG accepted</span>
-      </div>
+      <label class="dropzone" for="img-input">
+        <span class="dropzone-icon">🖼️</span>
+        <p>Tap Here to Select Images</p>
+        <span>JPG & PNG accepted</span>
+      </label>
       <input type="file" id="img-input" class="file-input" multiple accept="image/jpeg, image/png" onchange="handleImgFiles(this.files)" />
 
       <div id="img-files" class="file-list"></div>
       <button id="img-btn" class="action-btn" disabled onclick="processImagesToPdf()">Convert & Download</button>
       <div id="img-status" class="status-msg"></div>
-    </div>
+    </section>
 
-    <div id="tab-split" class="tool-card" style="display: none;">
-      <h2 class="tool-title">Split First Page of PDF</h2>
+    <section id="tab-split" class="tool-card" style="display: none;">
+      <h2 class="tool-title">Split First Page</h2>
       <p class="tool-desc">Extract the first page of any PDF instantly.</p>
 
-      <div class="dropzone" onclick="document.getElementById('split-input').click()">
-        ✂️
-        <p>Select PDF File</p>
-        <span>One PDF at a time</span>
-      </div>
+      <label class="dropzone" for="split-input">
+        <span class="dropzone-icon">✂️</span>
+        <p>Tap Here to Select PDF</p>
+        <span>One PDF file</span>
+      </label>
       <input type="file" id="split-input" class="file-input" accept="application/pdf" onchange="handleSplitFile(this.files)" />
 
       <div id="split-files" class="file-list"></div>
       <button id="split-btn" class="action-btn" disabled onclick="processSplit()">Extract Page 1 & Download</button>
       <div id="split-status" class="status-msg"></div>
-    </div>
+    </section>
   </main>
 
   <footer>
-    DocuLoom — 100% Free & Client-Side. No files are uploaded to any server.
+    DocuLoom — 100% Free & Client-Side. Files never leave your browser.
   </footer>
 
   <script>
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
-    function switchTab(tool, el) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      el.classList.add('active');
-
-      document.getElementById('tab-cleaner').style.display = tool === 'cleaner' ? 'block' : 'none';
-      document.getElementById('tab-nup').style.display = tool === 'nup' ? 'block' : 'none';
-      document.getElementById('tab-merge').style.display = tool === 'merge' ? 'block' : 'none';
-      document.getElementById('tab-img2pdf').style.display = tool === 'img2pdf' ? 'block' : 'none';
-      document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
+    // Direct Tab Switcher
+    function activateTab(tabKey) {
+      const tabs = ['cleaner', 'nup', 'merge', 'img2pdf', 'split'];
+      tabs.forEach(t => {
+        document.getElementById('tab-' + t).style.display = (t === tabKey) ? 'block' : 'none';
+        const btn = document.getElementById('btn-tab-' + t);
+        if (t === tabKey) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
 
-    // --- ENHANCED SAFE WATERMARK CLEANER ---
+    // --- WATERMARK CLEANER ---
     let cleanerFile = null;
     function handleCleanerFile(files) {
+      if (!files || files.length === 0) return;
       cleanerFile = files[0];
       const box = document.getElementById('cleaner-files');
-      if (cleanerFile) {
-        box.style.display = 'block';
-        box.innerHTML = `<strong>Selected:</strong> ${cleanerFile.name}`;
-        document.getElementById('cleaner-btn').disabled = false;
-      }
+      box.style.display = 'block';
+      box.innerHTML = `<strong>Selected:</strong> ${cleanerFile.name}`;
+      document.getElementById('cleaner-btn').disabled = false;
     }
 
     async function processWatermarkCleaning() {
       const status = document.getElementById('cleaner-status');
       status.className = 'status-msg';
-      status.innerText = 'Analyzing pages with text-protection engine...';
+      status.innerText = 'Analyzing pages & eliminating watermark...';
 
       try {
         const threshold = parseInt(document.getElementById('threshold-slider').value, 10);
@@ -377,30 +403,19 @@
 
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imgData.data;
-
-          // Safe Dynamic Curve: Preserves fine lines while bleaching watermarks
           const darkCap = Math.max(70, threshold - 65);
 
           for (let i = 0; i < data.length; i += 4) {
             const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
             
             if (gray >= threshold) {
-              // Whitewash watermark
-              data[i] = 255;
-              data[i + 1] = 255;
-              data[i + 2] = 255;
+              data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
             } else if (gray <= darkCap) {
-              // Deepen core text and math formulas to pitch black
-              data[i] = 0;
-              data[i + 1] = 0;
-              data[i + 2] = 0;
+              data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
             } else {
-              // Smooth transition preserving faint character strokes
               const normalized = (gray - darkCap) / (threshold - darkCap);
               const val = Math.floor(normalized * 255);
-              data[i] = val;
-              data[i + 1] = val;
-              data[i + 2] = val;
+              data[i] = val; data[i + 1] = val; data[i + 2] = val;
             }
           }
           ctx.putImageData(imgData, 0, 0);
@@ -431,24 +446,23 @@
         const cleanedPdfBytes = await outDoc.save();
         downloadBlob(cleanedPdfBytes, 'Cleaned_' + cleanerFile.name, 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = `Done! Successfully cleaned ${totalPages} pages without erasing text.`;
+        status.innerText = `Done! Successfully cleaned ${totalPages} pages.`;
       } catch (err) {
         console.error(err);
         status.className = 'status-msg error';
-        status.innerText = 'Error: Could not clean watermarks from this PDF.';
+        status.innerText = 'Error: Failed to clean this PDF.';
       }
     }
 
-    // --- HIGH-DENSITY 4-IN-1 ENGINE ---
+    // --- 4-IN-1 ENGINE ---
     let nupFile = null;
     function handleNupFile(files) {
+      if (!files || files.length === 0) return;
       nupFile = files[0];
       const box = document.getElementById('nup-files');
-      if (nupFile) {
-        box.style.display = 'block';
-        box.innerHTML = `<strong>Selected:</strong> ${nupFile.name}`;
-        document.getElementById('nup-btn').disabled = false;
-      }
+      box.style.display = 'block';
+      box.innerHTML = `<strong>Selected:</strong> ${nupFile.name}`;
+      document.getElementById('nup-btn').disabled = false;
     }
 
     async function process4In1() {
@@ -529,7 +543,7 @@
         const pdfBytes = await outDoc.save();
         downloadBlob(pdfBytes, 'DocuLoom_4in1_' + nupFile.name, 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} full-bleed sheets.`;
+        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} full sheets.`;
       } catch (err) {
         status.className = 'status-msg error';
         status.innerText = 'Error: Failed to process layout.';
@@ -539,13 +553,12 @@
     // --- MERGE LOGIC ---
     let mergeFileList = [];
     function handleMergeFiles(files) {
+      if (!files || files.length === 0) return;
       mergeFileList = Array.from(files);
       const box = document.getElementById('merge-files');
-      if (mergeFileList.length > 0) {
-        box.style.display = 'block';
-        box.innerHTML = `<strong>Selected:</strong><br>` + mergeFileList.map(f => `• ${f.name}`).join('<br>');
-        document.getElementById('merge-btn').disabled = false;
-      }
+      box.style.display = 'block';
+      box.innerHTML = `<strong>Selected:</strong><br>` + mergeFileList.map(f => `• ${f.name}`).join('<br>');
+      document.getElementById('merge-btn').disabled = false;
     }
 
     async function processMerge() {
@@ -571,19 +584,15 @@
       }
     }
 
-    // --- IMAGES TO PDF LOGIC ---
+    // --- IMAGES TO PDF ---
     let imgFileList = [];
     function handleImgFiles(files) {
+      if (!files || files.length === 0) return;
       imgFileList = Array.from(files);
       const box = document.getElementById('img-files');
-      if (imgFileList.length > 0) {
-        box.style.display = 'block';
-        box.innerHTML = `<strong>Selected:</strong><br>` + imgFileList.map(f => `• ${f.name}`).join('<br>');
-        document.getElementById('img-btn').disabled = false;
-      }
+      box.style.display = 'block';
+      box.innerHTML = `<strong>Selected:</strong><br>` + imgFileList.map(f => `• ${f.name}`).join('<br>');
+      document.getElementById('img-btn').disabled = false;
     }
 
-    async function processImagesToPdf() {
-      const status = document.getElementById('img-status');
-      status.className = 'status-msg';
-      status.innerText = '
+    as
