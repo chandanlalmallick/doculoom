@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocuLoom — Fast & Free PDF Tools</title>
-  <!-- Load standard PDF engine directly from CDN -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <style>
     :root {
@@ -203,24 +202,22 @@
   </div>
 
   <main>
-    <!-- 4 IN 1 N-UP TOOL -->
     <div id="tab-nup" class="tool-card">
-      <h2 class="tool-title">4 Pages in 1 Sheet (N-Up)</h2>
-      <p class="tool-desc">Fit 4 pages onto a single sheet in a 2×2 grid layout (100 pages → 25 pages).</p>
+      <h2 class="tool-title">Smart 4-in-1 Printable Layout</h2>
+      <p class="tool-desc">Cuts out unnecessary borders & adds DocuLoom signature at the bottom.</p>
 
       <div class="dropzone" onclick="document.getElementById('nup-input').click()">
         📄
         <p>Select PDF File</p>
-        <span>One PDF at a time</span>
+        <span>Slides/Notes PDF</span>
       </div>
       <input type="file" id="nup-input" class="file-input" accept="application/pdf" onchange="handleNupFile(this.files)" />
 
       <div id="nup-files" class="file-list"></div>
-      <button id="nup-btn" class="action-btn" disabled onclick="process4In1()">Convert to 4-in-1 & Download</button>
+      <button id="nup-btn" class="action-btn" disabled onclick="process4In1()">Convert & Auto-Fit 4-in-1</button>
       <div id="nup-status" class="status-msg"></div>
     </div>
 
-    <!-- MERGE PDFS TOOL -->
     <div id="tab-merge" class="tool-card" style="display: none;">
       <h2 class="tool-title">Merge PDF Files</h2>
       <p class="tool-desc">Combine 2 or more PDFs into a single document.</p>
@@ -237,7 +234,6 @@
       <div id="merge-status" class="status-msg"></div>
     </div>
 
-    <!-- IMAGES TO PDF TOOL -->
     <div id="tab-img2pdf" class="tool-card" style="display: none;">
       <h2 class="tool-title">Convert Images to PDF</h2>
       <p class="tool-desc">Turn JPG and PNG images into a clean PDF file.</p>
@@ -254,7 +250,6 @@
       <div id="img-status" class="status-msg"></div>
     </div>
 
-    <!-- SPLIT PDF TOOL -->
     <div id="tab-split" class="tool-card" style="display: none;">
       <h2 class="tool-title">Split First Page of PDF</h2>
       <p class="tool-desc">Extract the first page of any PDF instantly.</p>
@@ -273,11 +268,11 @@
   </main>
 
   <footer>
-    100% Free & Client-Side. No files are uploaded to any server.
+    DocuLoom — 100% Free & Client-Side. No files are uploaded to any server.
   </footer>
 
   <script>
-    const { PDFDocument, degrees } = PDFLib;
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
     function switchTab(tool, el) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -289,7 +284,7 @@
       document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
     }
 
-    // --- 4-IN-1 (N-UP) LOGIC ---
+    // --- ENHANCED 4-IN-1 AUTO-FIT WITH DOCULOOM BRANDING ---
     let nupFile = null;
     function handleNupFile(files) {
       nupFile = files[0];
@@ -304,59 +299,75 @@
     async function process4In1() {
       const status = document.getElementById('nup-status');
       status.className = 'status-msg';
-      status.innerText = 'Creating 4-in-1 layout...';
+      status.innerText = 'Optimizing layout & adding DocuLoom branding...';
 
       try {
         const fileBytes = await nupFile.arrayBuffer();
         const srcDoc = await PDFDocument.load(fileBytes);
         const outDoc = await PDFDocument.create();
+        const font = await outDoc.embedFont(StandardFonts.HelveticaBold);
 
         const totalPages = srcDoc.getPageCount();
         const embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
 
-        const SHEET_WIDTH = 595.28;  // A4 standard points
+        const SHEET_WIDTH = 595.28;
         const SHEET_HEIGHT = 841.89;
-        const halfW = SHEET_WIDTH / 2;
-        const halfH = SHEET_HEIGHT / 2;
+
+        const margin = 12; 
+        const gap = 8;     
+        const footerSpace = 16;
+
+        const colWidth = (SHEET_WIDTH - (2 * margin) - gap) / 2;
+        const rowHeight = (SHEET_HEIGHT - (2 * margin) - gap - footerSpace) / 2;
 
         for (let i = 0; i < totalPages; i += 4) {
           const sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
           const batch = embeddedPages.slice(i, i + 4);
 
-          // Grid positions: [Top-Left, Top-Right, Bottom-Left, Bottom-Right]
-          const slots = [
-            { x: 0,     y: halfH },
-            { x: halfW, y: halfH },
-            { x: 0,     y: 0 },
-            { x: halfW, y: 0 }
+          const positions = [
+            { x: margin, y: margin + rowHeight + gap + footerSpace },
+            { x: margin + colWidth + gap, y: margin + rowHeight + gap + footerSpace },
+            { x: margin, y: margin + footerSpace },
+            { x: margin + colWidth + gap, y: margin + footerSpace }
           ];
 
           batch.forEach((embeddedPage, idx) => {
             const { width, height } = embeddedPage.scale(1);
-            const scale = Math.min((halfW - 10) / width, (halfH - 10) / height);
+            
+            const scale = Math.min(colWidth / width, rowHeight / height);
             const scaledW = width * scale;
             const scaledH = height * scale;
 
-            const slot = slots[idx];
-            const offsetX = slot.x + (halfW - scaledW) / 2;
-            const offsetY = slot.y + (halfH - scaledH) / 2;
+            const posX = positions[idx].x + (colWidth - scaledW) / 2;
+            const posY = positions[idx].y + (rowHeight - scaledH) / 2;
 
             sheet.drawPage(embeddedPage, {
-              x: offsetX,
-              y: offsetY,
+              x: posX,
+              y: posY,
               xScale: scale,
               yScale: scale
             });
           });
+
+          // Write "DocuLoom" at the bottom center of each page
+          const brandText = "DocuLoom";
+          const textWidth = font.widthOfTextAtSize(brandText, 9);
+          sheet.drawText(brandText, {
+            x: (SHEET_WIDTH - textWidth) / 2,
+            y: 8,
+            size: 9,
+            font: font,
+            color: rgb(0.4, 0.4, 0.4),
+          });
         }
 
         const pdfBytes = await outDoc.save();
-        downloadBlob(pdfBytes, '4_in_1_' + nupFile.name, 'application/pdf');
+        downloadBlob(pdfBytes, 'DocuLoom_4in1_' + nupFile.name, 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} pages.`;
+        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} sheets.`;
       } catch (err) {
         status.className = 'status-msg error';
-        status.innerText = 'Error: Failed to convert PDF to 4-in-1.';
+        status.innerText = 'Error: Failed to process layout.';
       }
     }
 
@@ -386,9 +397,9 @@
           pages.forEach(page => mergedPdf.addPage(page));
         }
         const pdfBytes = await mergedPdf.save();
-        downloadBlob(pdfBytes, 'merged_document.pdf', 'application/pdf');
+        downloadBlob(pdfBytes, 'DocuLoom_Merged.pdf', 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = 'Done! Your file downloaded automatically.';
+        status.innerText = 'Done! Your merged file downloaded.';
       } catch (err) {
         status.className = 'status-msg error';
         status.innerText = 'Error: Could not merge the files.';
@@ -414,6 +425,8 @@
 
       try {
         const pdfDoc = await PDFDocument.create();
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
         for (const file of imgFileList) {
           const bytes = await file.arrayBuffer();
           let img;
@@ -422,11 +435,20 @@
           } else {
             img = await pdfDoc.embedPng(bytes);
           }
-          const page = pdfDoc.addPage([img.width, img.height]);
-          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+          const page = pdfDoc.addPage([img.width, img.height + 25]);
+          page.drawImage(img, { x: 0, y: 25, width: img.width, height: img.height });
+          
+          // Add DocuLoom name at the bottom
+          page.drawText("DocuLoom", {
+            x: (img.width - 60) / 2,
+            y: 8,
+            size: 10,
+            font: font,
+            color: rgb(0.4, 0.4, 0.4),
+          });
         }
         const pdfBytes = await pdfDoc.save();
-        downloadBlob(pdfBytes, 'converted_images.pdf', 'application/pdf');
+        downloadBlob(pdfBytes, 'DocuLoom_Images.pdf', 'application/pdf');
         status.className = 'status-msg success';
         status.innerText = 'Done! Your PDF downloaded.';
       } catch (err) {
@@ -460,7 +482,7 @@
         newPdf.addPage(firstPage);
 
         const pdfBytes = await newPdf.save();
-        downloadBlob(pdfBytes, 'extracted_page_1.pdf', 'application/pdf');
+        downloadBlob(pdfBytes, 'DocuLoom_Page1.pdf', 'application/pdf');
         status.className = 'status-msg success';
         status.innerText = 'Done! Extracted page downloaded.';
       } catch (err) {
