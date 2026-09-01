@@ -195,7 +195,7 @@
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('nup', this)">📄 4 Pages in 1</button>
+    <button class="tab-btn active" onclick="switchTab('nup', this)">📄 4 Pages in 1 (Fit Print)</button>
     <button class="tab-btn" onclick="switchTab('merge', this)">📑 Merge PDFs</button>
     <button class="tab-btn" onclick="switchTab('img2pdf', this)">🖼️ Images to PDF</button>
     <button class="tab-btn" onclick="switchTab('split', this)">✂️ Split PDF</button>
@@ -203,13 +203,13 @@
 
   <main>
     <div id="tab-nup" class="tool-card">
-      <h2 class="tool-title">Smart 4-in-1 Printable Layout</h2>
-      <p class="tool-desc">Cuts out unnecessary borders & adds DocuLoom signature at the bottom.</p>
+      <h2 class="tool-title">Smart 4-in-1 Layout (Max Size)</h2>
+      <p class="tool-desc">Auto-fits slides into landscape sheets without blank gaps so letters remain large and legible.</p>
 
       <div class="dropzone" onclick="document.getElementById('nup-input').click()">
         📄
         <p>Select PDF File</p>
-        <span>Slides/Notes PDF</span>
+        <span>Lecture slides, notes, or handouts</span>
       </div>
       <input type="file" id="nup-input" class="file-input" accept="application/pdf" onchange="handleNupFile(this.files)" />
 
@@ -284,7 +284,7 @@
       document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
     }
 
-    // --- ENHANCED 4-IN-1 AUTO-FIT WITH DOCULOOM BRANDING ---
+    // --- HIGH-DENSITY 4-IN-1 ENGINE ---
     let nupFile = null;
     function handleNupFile(files) {
       nupFile = files[0];
@@ -299,7 +299,7 @@
     async function process4In1() {
       const status = document.getElementById('nup-status');
       status.className = 'status-msg';
-      status.innerText = 'Optimizing layout & adding DocuLoom branding...';
+      status.innerText = 'Calculating maximum fit & removing blank gaps...';
 
       try {
         const fileBytes = await nupFile.arrayBuffer();
@@ -308,54 +308,68 @@
         const font = await outDoc.embedFont(StandardFonts.HelveticaBold);
 
         const totalPages = srcDoc.getPageCount();
+        const firstPage = srcDoc.getPage(0);
+        const isLandscape = firstPage.getWidth() >= firstPage.getHeight();
+
         const embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
 
-        const SHEET_WIDTH = 595.28;
-        const SHEET_HEIGHT = 841.89;
+        // Use Landscape A4 (841.89 x 595.28) for landscape slides, Portrait A4 for portrait pages
+        const SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
+        const SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
 
-        const margin = 12; 
-        const gap = 8;     
+        const margin = 10;
+        const gap = 8;
         const footerSpace = 16;
 
-        const colWidth = (SHEET_WIDTH - (2 * margin) - gap) / 2;
-        const rowHeight = (SHEET_HEIGHT - (2 * margin) - gap - footerSpace) / 2;
+        const availWidth = SHEET_WIDTH - (margin * 2);
+        const availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+
+        const slotW = (availWidth - gap) / 2;
+        const slotH = (availHeight - gap) / 2;
 
         for (let i = 0; i < totalPages; i += 4) {
           const sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
           const batch = embeddedPages.slice(i, i + 4);
 
-          const positions = [
-            { x: margin, y: margin + rowHeight + gap + footerSpace },
-            { x: margin + colWidth + gap, y: margin + rowHeight + gap + footerSpace },
-            { x: margin, y: margin + footerSpace },
-            { x: margin + colWidth + gap, y: margin + footerSpace }
+          // Get dimensions from the first page of this batch to tightly stack rows
+          const sample = batch[0];
+          const sampleSize = sample.scale(1);
+          const scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
+
+          const scaledW = sampleSize.width * scale;
+          const scaledH = sampleSize.height * scale;
+
+          // Compute exact bounding box and center tightly
+          const totalGridW = (scaledW * 2) + gap;
+          const totalGridH = (scaledH * 2) + gap;
+
+          const startX = (SHEET_WIDTH - totalGridW) / 2;
+          const startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
+
+          const gridCoords = [
+            { x: startX,                   y: startY + scaledH + gap }, // Top-Left
+            { x: startX + scaledW + gap,    y: startY + scaledH + gap }, // Top-Right
+            { x: startX,                   y: startY },                 // Bottom-Left
+            { x: startX + scaledW + gap,    y: startY }                  // Bottom-Right
           ];
 
           batch.forEach((embeddedPage, idx) => {
-            const { width, height } = embeddedPage.scale(1);
-            
-            const scale = Math.min(colWidth / width, rowHeight / height);
-            const scaledW = width * scale;
-            const scaledH = height * scale;
-
-            const posX = positions[idx].x + (colWidth - scaledW) / 2;
-            const posY = positions[idx].y + (rowHeight - scaledH) / 2;
-
+            const pos = gridCoords[idx];
             sheet.drawPage(embeddedPage, {
-              x: posX,
-              y: posY,
+              x: pos.x,
+              y: pos.y,
               xScale: scale,
               yScale: scale
             });
           });
 
-          // Write "DocuLoom" at the bottom center of each page
+          // Subtle DocuLoom Branding
           const brandText = "DocuLoom";
-          const textWidth = font.widthOfTextAtSize(brandText, 9);
+          const textWidth = font.widthOfTextAtSize(brandText, 8.5);
           sheet.drawText(brandText, {
             x: (SHEET_WIDTH - textWidth) / 2,
-            y: 8,
-            size: 9,
+            y: 6,
+            size: 8.5,
             font: font,
             color: rgb(0.4, 0.4, 0.4),
           });
@@ -364,7 +378,7 @@
         const pdfBytes = await outDoc.save();
         downloadBlob(pdfBytes, 'DocuLoom_4in1_' + nupFile.name, 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} sheets.`;
+        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} full-bleed sheets.`;
       } catch (err) {
         status.className = 'status-msg error';
         status.innerText = 'Error: Failed to process layout.';
@@ -399,7 +413,7 @@
         const pdfBytes = await mergedPdf.save();
         downloadBlob(pdfBytes, 'DocuLoom_Merged.pdf', 'application/pdf');
         status.className = 'status-msg success';
-        status.innerText = 'Done! Your merged file downloaded.';
+        status.innerText = 'Done! Your file downloaded automatically.';
       } catch (err) {
         status.className = 'status-msg error';
         status.innerText = 'Error: Could not merge the files.';
@@ -438,7 +452,6 @@
           const page = pdfDoc.addPage([img.width, img.height + 25]);
           page.drawImage(img, { x: 0, y: 25, width: img.width, height: img.height });
           
-          // Add DocuLoom name at the bottom
           page.drawText("DocuLoom", {
             x: (img.width - 60) / 2,
             y: 8,
