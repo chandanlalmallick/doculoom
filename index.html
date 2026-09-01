@@ -1,581 +1,890 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DocuLoom — Clean & Convert PDF Tools</title>
+  <meta charset="UTF-8">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    :root {
-      --primary: #e11d48;
-      --primary-hover: #be123c;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
-    }
+  <title>DocuLoom - Free PDF Tools Online | Edit, Merge, Compress & Convert PDF</title>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+  <meta
+    name="description"
+    content="DocuLoom offers free online PDF tools. Edit PDF, merge PDF, split PDF, compress PDF, convert PDF to Word, PDF to JPG, sign PDF and more."
+  >
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  <meta
+    name="keywords"
+    content="PDF editor, edit PDF, PDF editor online, merge PDF, compress PDF, split PDF, PDF to Word, PDF to JPG, convert PDF, sign PDF, free PDF tools"
+  >
 
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      padding: 1.25rem 1rem;
-      text-align: center;
-    }
+  <meta name="robots" content="index, follow">
 
-    .brand {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--primary);
-      text-decoration: none;
-    }
+  <link rel="canonical" href="https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/">
 
-    .brand span {
-      color: var(--text);
-    }
+  <meta name="theme-color" content="#6d4aff">
 
-    /* Tab Switcher */
-    .nav-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0.75rem;
-      margin: 1.5rem 1rem 0;
-    }
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DocuLoom - Free Online PDF Tools">
+  <meta
+    property="og:description"
+    content="Edit, merge, compress, split, convert and manage PDFs online for free."
+  >
+  <meta property="og:url" content="https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/">
+  <meta property="og:site_name" content="DocuLoom">
 
-    .tab-btn {
-      flex: 1;
-      max-width: 200px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      padding: 0.75rem 1rem;
-      border-radius: 9999px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DocuLoom - Free PDF Tools">
+  <meta
+    name="twitter:description"
+    content="Free online tools for editing, converting, compressing and managing PDF documents."
+  >
 
-    .tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.25);
-    }
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
-    main {
-      max-width: 520px;
-      width: 100%;
-      margin: 1.25rem auto;
-      padding: 0 1rem;
-      flex: 1;
-    }
-
-    .tool-panel {
-      display: none;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.75rem 1.25rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      text-align: center;
-    }
-
-    .tool-panel.active {
-      display: block;
-    }
-
-    .tool-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
-    }
-
-    .tool-desc {
-      font-size: 0.88rem;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-      line-height: 1.4;
-    }
-
-    .upload-box {
-      background: #f1f5f9;
-      border: 2px dashed #cbd5e1;
-      border-radius: var(--radius);
-      padding: 1.5rem 1rem;
-      margin-bottom: 1.25rem;
-      text-align: left;
-    }
-
-    .upload-box label {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1e293b;
-      display: block;
-      margin-bottom: 0.6rem;
-    }
-
-    input[type="file"] {
-      display: block;
-      width: 100%;
-      font-size: 0.9rem;
-      color: var(--muted);
-      padding: 0.6rem;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .file-details {
-      font-size: 0.85rem;
-      color: #0f172a;
-      margin-top: 0.75rem;
-      padding: 0.6rem;
-      background: #ffffff;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      display: none;
-      word-break: break-all;
-    }
-
-    .threshold-box {
-      margin-bottom: 1.25rem;
-      text-align: left;
-      background: #f8fafc;
-      padding: 0.85rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .slider {
-      width: 100%;
-      height: 6px;
-      accent-color: var(--primary);
-      margin: 0.5rem 0;
-    }
-
-    .guide-table {
-      width: 100%;
-      font-size: 0.75rem;
-      margin-top: 0.4rem;
-      border-collapse: collapse;
-    }
-
-    .guide-table td {
-      padding: 2px 0;
-      color: var(--muted);
-    }
-
-    .action-btn {
-      width: 100%;
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 0.95rem;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .action-btn:disabled {
-      background: #cbd5e1;
-      cursor: not-allowed;
-    }
-
-    .progress-box {
-      display: none;
-      margin-top: 1.25rem;
-      text-align: left;
-    }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 10px;
-      background: #e2e8f0;
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 0.4rem;
-    }
-
-    .progress-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: var(--primary);
-      transition: width 0.15s ease;
-    }
-
-    .status-msg {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .status-msg.success { color: #059669; }
-    .status-msg.error { color: #dc2626; }
-
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: #ffffff;
-      margin-top: auto;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <header>
-    <a href="index.html" class="brand">Docu<span>Loom</span></a>
+  <!-- HEADER -->
+
+  <header class="site-header">
+
+    <div class="container header-inner">
+
+      <a href="./" class="logo">
+        <span class="logo-icon">D</span>
+        <span>DocuLoom</span>
+      </a>
+
+      <nav class="navigation">
+
+        <a href="#tools">PDF Tools</a>
+        <a href="#popular">Popular</a>
+        <a href="#features">Features</a>
+
+      </nav>
+
+      <a href="#tools" class="header-button">
+        Explore Tools
+      </a>
+
+    </div>
+
   </header>
 
-  <div class="nav-tabs">
-    <button id="btn-tab-cleaner" class="tab-btn active" onclick="switchTab('cleaner')">🧼 Clean Watermark</button>
-    <button id="btn-tab-nup" class="tab-btn" onclick="switchTab('nup')">📄 4 Pages in 1</button>
-  </div>
+
+  <!-- HERO -->
 
   <main>
-    <div id="panel-cleaner" class="tool-panel active">
-      <h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
-      <p class="tool-desc">Erases background watermarks/stamps and darkens text for clear printing.</p>
 
-      <div class="upload-box">
-        <label for="cleaner-file">Choose PDF File:</label>
-        <input type="file" id="cleaner-file" accept="application/pdf" />
-        <div id="cleaner-info" class="file-details"></div>
-      </div>
+    <section class="hero">
 
-      <div class="threshold-box">
-        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem;">
-          <span>Cleaning Threshold</span>
-          <span id="slider-val" style="color:var(--primary);">168</span>
+      <div class="container hero-content">
+
+        <div class="hero-badge">
+          ✨ Free online document tools
         </div>
-        <input type="range" id="cleaner-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('slider-val').innerText = this.value">
-        <table class="guide-table">
-          <tr><td><strong>130–155:</strong></td><td>Faint handwriting / light math symbols</td></tr>
-          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Recommended)</td></tr>
-          <tr><td><strong>180–210:</strong></td><td>Dark gray watermarks</td></tr>
-        </table>
-      </div>
 
-      <button id="cleaner-btn" class="action-btn" onclick="executeCleanWatermark()">Remove Watermark & Download</button>
+        <h1>
+          Everything you need to
+          <span>work with PDFs.</span>
+        </h1>
 
-      <div id="cleaner-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-          <span id="cleaner-prog-text">Processing...</span>
-          <span id="cleaner-prog-pct">0%</span>
+        <p class="hero-description">
+          Edit, merge, compress, split, convert and manage your documents
+          with simple online tools.
+        </p>
+
+
+        <!-- SEARCH -->
+
+        <div class="tool-search">
+
+          <label for="toolSearch">
+            Search PDF tools
+          </label>
+
+          <div class="search-box">
+
+            <span class="search-icon">⌕</span>
+
+            <input
+              id="toolSearch"
+              type="search"
+              placeholder="Try “edit PDF”, “compress PDF”, “PDF to Word”..."
+              autocomplete="off"
+            >
+
+          </div>
+
         </div>
-        <div class="progress-bar-bg"><div id="cleaner-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="cleaner-msg" class="status-msg"></div>
-    </div>
 
-    <div id="panel-nup" class="tool-panel">
-      <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
-      <p class="tool-desc">Combines 4 slides onto 1 sheet to save paper with large legible text.</p>
 
-      <div class="upload-box">
-        <label for="nup-file">Choose PDF File:</label>
-        <input type="file" id="nup-file" accept="application/pdf" />
-        <div id="nup-info" class="file-details"></div>
-      </div>
+        <div class="quick-searches">
 
-      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
+          <span>Popular:</span>
 
-      <div id="nup-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-          <span id="nup-prog-text">Converting...</span>
-          <span id="nup-prog-pct">0%</span>
+          <button onclick="searchTool('Edit PDF')">
+            Edit PDF
+          </button>
+
+          <button onclick="searchTool('Merge PDF')">
+            Merge PDF
+          </button>
+
+          <button onclick="searchTool('Compress PDF')">
+            Compress PDF
+          </button>
+
+          <button onclick="searchTool('PDF to Word')">
+            PDF to Word
+          </button>
+
         </div>
-        <div class="progress-bar-bg"><div id="nup-prog-fill" class="progress-bar-fill"></div></div>
+
       </div>
-      <div id="nup-msg" class="status-msg"></div>
-    </div>
+
+    </section>
+
+
+    <!-- POPULAR TOOLS -->
+
+    <section id="popular" class="section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              MOST USED
+            </p>
+
+            <h2>
+              Popular PDF tools
+            </h2>
+
+          </div>
+
+          <p>
+            Quickly find the tool you need.
+          </p>
+
+        </div>
+
+
+        <div class="tool-grid">
+
+
+          <!-- EDIT PDF -->
+
+          <a
+            href="edit-pdf.html"
+            class="tool-card featured-tool"
+            data-search="edit pdf pdf editor edit pdf online"
+          >
+
+            <div class="tool-icon purple">
+              ✎
+            </div>
+
+            <div>
+
+              <h3>
+                Edit PDF
+              </h3>
+
+              <p>
+                Edit text, add images, annotate and modify PDF documents.
+              </p>
+
+              <span class="tool-link">
+                Edit PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- MERGE -->
+
+          <a
+            href="merge-pdf.html"
+            class="tool-card"
+            data-search="merge pdf combine pdf join pdf"
+          >
+
+            <div class="tool-icon blue">
+              ＋
+            </div>
+
+            <div>
+
+              <h3>
+                Merge PDF
+              </h3>
+
+              <p>
+                Combine multiple PDF files into one document.
+              </p>
+
+              <span class="tool-link">
+                Merge PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- COMPRESS -->
+
+          <a
+            href="compress-pdf.html"
+            class="tool-card"
+            data-search="compress pdf reduce pdf size smaller pdf"
+          >
+
+            <div class="tool-icon green">
+              ↓
+            </div>
+
+            <div>
+
+              <h3>
+                Compress PDF
+              </h3>
+
+              <p>
+                Reduce PDF file size while keeping your document readable.
+              </p>
+
+              <span class="tool-link">
+                Compress PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- SPLIT -->
+
+          <a
+            href="split-pdf.html"
+            class="tool-card"
+            data-search="split pdf extract pdf pages"
+          >
+
+            <div class="tool-icon orange">
+              ✂
+            </div>
+
+            <div>
+
+              <h3>
+                Split PDF
+              </h3>
+
+              <p>
+                Extract pages or split a PDF into separate documents.
+              </p>
+
+              <span class="tool-link">
+                Split PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- PDF TO WORD -->
+
+          <a
+            href="pdf-to-word.html"
+            class="tool-card"
+            data-search="pdf to word convert pdf to docx"
+          >
+
+            <div class="tool-icon indigo">
+              W
+            </div>
+
+            <div>
+
+              <h3>
+                PDF to Word
+              </h3>
+
+              <p>
+                Convert PDF documents into editable Word files.
+              </p>
+
+              <span class="tool-link">
+                PDF to Word →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- PDF TO JPG -->
+
+          <a
+            href="pdf-to-jpg.html"
+            class="tool-card"
+            data-search="pdf to jpg pdf to image convert pdf"
+          >
+
+            <div class="tool-icon pink">
+              ◉
+            </div>
+
+            <div>
+
+              <h3>
+                PDF to JPG
+              </h3>
+
+              <p>
+                Convert PDF pages into JPG images.
+              </p>
+
+              <span class="tool-link">
+                PDF to JPG →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- JPG TO PDF -->
+
+          <a
+            href="jpg-to-pdf.html"
+            class="tool-card"
+            data-search="jpg to pdf image to pdf convert jpg"
+          >
+
+            <div class="tool-icon red">
+              ▣
+            </div>
+
+            <div>
+
+              <h3>
+                JPG to PDF
+              </h3>
+
+              <p>
+                Turn images and JPG files into PDF documents.
+              </p>
+
+              <span class="tool-link">
+                JPG to PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+
+          <!-- SIGN PDF -->
+
+          <a
+            href="sign-pdf.html"
+            class="tool-card"
+            data-search="sign pdf electronic signature pdf"
+          >
+
+            <div class="tool-icon teal">
+              ✓
+            </div>
+
+            <div>
+
+              <h3>
+                Sign PDF
+              </h3>
+
+              <p>
+                Add your signature to PDF documents online.
+              </p>
+
+              <span class="tool-link">
+                Sign PDF →
+              </span>
+
+            </div>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ALL TOOLS -->
+
+    <section id="tools" class="section all-tools">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              DOCULOOM TOOLBOX
+            </p>
+
+            <h2>
+              All PDF tools
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div class="category-grid">
+
+
+          <div class="category">
+
+            <h3>
+              PDF Editing
+            </h3>
+
+            <a href="edit-pdf.html">
+              Edit PDF
+            </a>
+
+            <a href="annotate-pdf.html">
+              Annotate PDF
+            </a>
+
+            <a href="sign-pdf.html">
+              Sign PDF
+            </a>
+
+            <a href="watermark-pdf.html">
+              Add Watermark
+            </a>
+
+          </div>
+
+
+          <div class="category">
+
+            <h3>
+              PDF Organization
+            </h3>
+
+            <a href="merge-pdf.html">
+              Merge PDF
+            </a>
+
+            <a href="split-pdf.html">
+              Split PDF
+            </a>
+
+            <a href="rotate-pdf.html">
+              Rotate PDF
+            </a>
+
+            <a href="delete-pdf-pages.html">
+              Delete PDF Pages
+            </a>
+
+          </div>
+
+
+          <div class="category">
+
+            <h3>
+              PDF Conversion
+            </h3>
+
+            <a href="pdf-to-word.html">
+              PDF to Word
+            </a>
+
+            <a href="pdf-to-jpg.html">
+              PDF to JPG
+            </a>
+
+            <a href="jpg-to-pdf.html">
+              JPG to PDF
+            </a>
+
+            <a href="pdf-to-text.html">
+              PDF to Text
+            </a>
+
+          </div>
+
+
+          <div class="category">
+
+            <h3>
+              PDF Optimization
+            </h3>
+
+            <a href="compress-pdf.html">
+              Compress PDF
+            </a>
+
+            <a href="repair-pdf.html">
+              Repair PDF
+            </a>
+
+            <a href="ocr-pdf.html">
+              OCR PDF
+            </a>
+
+            <a href="flatten-pdf.html">
+              Flatten PDF
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- AI SECTION -->
+
+    <section id="features" class="ai-section">
+
+      <div class="container">
+
+        <div class="ai-card">
+
+          <div class="ai-content">
+
+            <p class="eyebrow">
+              COMING SOON
+            </p>
+
+            <h2>
+              Ask DocuLoom what your document means.
+            </h2>
+
+            <p>
+              Upload or paste a complicated document and get a simple
+              explanation, summary, key points and questions.
+            </p>
+
+            <button class="primary-button" onclick="showComingSoon()">
+              Try AI Document Assistant
+            </button>
+
+          </div>
+
+          <div class="ai-visual">
+
+            <div class="ai-window">
+
+              <div class="ai-question">
+                What does this document actually say?
+              </div>
+
+              <div class="ai-answer">
+                <strong>Simple explanation</strong>
+
+                <p>
+                  This document explains the main terms,
+                  important dates and actions you need to take.
+                </p>
+
+                <div class="ai-points">
+
+                  <span>✓ Key dates</span>
+                  <span>✓ Important terms</span>
+                  <span>✓ Action items</span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- WHY DOCULOOM -->
+
+    <section class="section">
+
+      <div class="container">
+
+        <div class="section-heading centered">
+
+          <p class="eyebrow">
+            WHY DOCULOOM
+          </p>
+
+          <h2>
+            Simple document tools.
+          </h2>
+
+          <p>
+            No complicated software. Just choose a tool and get started.
+          </p>
+
+        </div>
+
+
+        <div class="benefits">
+
+          <div class="benefit">
+
+            <div>⚡</div>
+
+            <h3>
+              Fast
+            </h3>
+
+            <p>
+              Simple tools designed to get your document work done quickly.
+            </p>
+
+          </div>
+
+
+          <div class="benefit">
+
+            <div>🔒</div>
+
+            <h3>
+              Privacy focused
+            </h3>
+
+            <p>
+              We aim to process documents safely and keep the experience simple.
+            </p>
+
+          </div>
+
+
+          <div class="benefit">
+
+            <div>📱</div>
+
+            <h3>
+              Works everywhere
+            </h3>
+
+            <p>
+              Use DocuLoom from your phone, tablet or computer.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SEO CONTENT -->
+
+    <section class="seo-section">
+
+      <div class="container seo-content">
+
+        <h2>
+          Free online PDF tools
+        </h2>
+
+        <p>
+          DocuLoom is an online document toolbox designed to make everyday
+          PDF tasks easier. You can use tools to edit PDF files, merge
+          multiple PDFs, compress large documents, split PDF pages,
+          convert PDFs to Word or JPG and sign documents online.
+        </p>
+
+        <p>
+          Whether you need to edit a PDF, reduce its file size, convert a
+          document or organize PDF pages, DocuLoom brings commonly used
+          document tools together in one place.
+        </p>
+
+        <h2>
+          Edit PDF online
+        </h2>
+
+        <p>
+          Use the DocuLoom PDF editor to make changes to documents,
+          annotate pages and prepare files for sharing.
+        </p>
+
+        <h2>
+          Compress PDF files
+        </h2>
+
+        <p>
+          Large PDF files can be difficult to upload or share. DocuLoom's
+          PDF compression tool is designed to help reduce document size.
+        </p>
+
+        <h2>
+          Convert PDF files
+        </h2>
+
+        <p>
+          Convert PDF documents to common formats such as Word, JPG and
+          text when you need to reuse information from a document.
+        </p>
+
+      </div>
+
+    </section>
+
   </main>
 
-  <footer>
-    DocuLoom — 100% Free & Client-Side.
+
+  <!-- FOOTER -->
+
+  <footer class="footer">
+
+    <div class="container footer-inner">
+
+      <div>
+
+        <div class="logo">
+          <span class="logo-icon">D</span>
+          <span>DocuLoom</span>
+        </div>
+
+        <p>
+          Simple tools for your documents.
+        </p>
+
+      </div>
+
+
+      <div class="footer-links">
+
+        <a href="#tools">
+          PDF Tools
+        </a>
+
+        <a href="#popular">
+          Popular Tools
+        </a>
+
+        <a href="#features">
+          AI Assistant
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <div class="container copyright">
+
+      © 2026 DocuLoom. All rights reserved.
+
+    </div>
+
   </footer>
 
+
   <script>
-    // Tab Switcher
-    function switchTab(tabId) {
-      document.getElementById('panel-cleaner').classList.toggle('active', tabId === 'cleaner');
-      document.getElementById('panel-nup').classList.toggle('active', tabId === 'nup');
 
-      document.getElementById('btn-tab-cleaner').classList.toggle('active', tabId === 'cleaner');
-      document.getElementById('btn-tab-nup').classList.toggle('active', tabId === 'nup');
-    }
+    const searchInput = document.getElementById("toolSearch");
 
-    // Attach native input listeners
-    document.getElementById('cleaner-file').addEventListener('change', function(e) {
-      var info = document.getElementById('cleaner-info');
-      if (e.target.files && e.target.files.length > 0) {
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
-      }
-    });
+    const toolCards = document.querySelectorAll(".tool-card");
 
-    document.getElementById('nup-file').addEventListener('change', function(e) {
-      var info = document.getElementById('nup-info');
-      if (e.target.files && e.target.files.length > 0) {
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
-      }
-    });
 
-    function setProgress(prefix, text, pct) {
-      var wrap = document.getElementById(prefix + '-progress');
-      var txt = document.getElementById(prefix + '-prog-text');
-      var pctLabel = document.getElementById(prefix + '-prog-pct');
-      var fill = document.getElementById(prefix + '-prog-fill');
-      if (wrap) wrap.style.display = 'block';
-      if (txt) txt.innerText = text;
-      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
-      if (fill) fill.style.width = pct + '%';
-    }
+    function searchTool(query) {
 
-    function triggerDownload(bytes, filename) {
-      var blob = new Blob([bytes], { type: 'application/pdf' });
-      var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+      searchInput.value = query;
 
-    // ==========================================
-    // 1. WATERMARK CLEANER ENGINE (No-Worker Safe Mode)
-    // ==========================================
-    async function executeCleanWatermark() {
-      var input = document.getElementById('cleaner-file');
-      var msg = document.getElementById('cleaner-msg');
-      var btn = document.getElementById('cleaner-btn');
+      searchInput.focus();
 
-      if (!input.files || input.files.length === 0) {
-        alert('Please select a PDF file first!');
-        return;
-      }
+      filterTools();
 
-      var file = input.files[0];
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('cleaner', 'Starting PDF engine...', 5);
-
-      try {
-        var threshold = parseInt(document.getElementById('cleaner-slider').value, 10);
-        var fileBytes = await file.arrayBuffer();
-
-        // Standard PDF.js In-Memory Reader
-        var loadingTask = pdfjsLib.getDocument({
-          data: new Uint8Array(fileBytes),
-          disableWorker: true // Prevents mobile worker freeze
+      document
+        .getElementById("popular")
+        .scrollIntoView({
+          behavior: "smooth"
         });
-        var pdf = await loadingTask.promise;
-        var totalPages = pdf.numPages;
 
-        var outDoc = await PDFLib.PDFDocument.create();
-        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-
-        for (var pageNum = 1; pageNum <= totalPages; pageNum++) {
-          var pct = Math.round(5 + ((pageNum / totalPages) * 85));
-          setProgress('cleaner', 'Cleaning page ' + pageNum + ' of ' + totalPages + '...', pct);
-
-          var page = await pdf.getPage(pageNum);
-          var viewport = page.getViewport({ scale: 1.5 }); // High-definition print balance
-
-          var canvas = document.createElement('canvas');
-          var ctx = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
-          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-
-          var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var data = imgData.data;
-          var darkCap = Math.max(70, threshold - 65);
-
-          for (var i = 0; i < data.length; i += 4) {
-            var gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            if (gray >= threshold) {
-              data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
-            } else if (gray <= darkCap) {
-              data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
-            } else {
-              var norm = (gray - darkCap) / (threshold - darkCap);
-              var val = Math.floor(norm * 255);
-              data[i] = val; data[i + 1] = val; data[i + 2] = val;
-            }
-          }
-          ctx.putImageData(imgData, 0, 0);
-
-          var cleanDataUrl = canvas.toDataURL('image/jpeg', 0.90);
-          var cleanImgBytes = await fetch(cleanDataUrl).then(function(r){ return r.arrayBuffer(); });
-          var cleanImg = await outDoc.embedJpg(cleanImgBytes);
-
-          var outPage = outDoc.addPage([595.28, 841.89]);
-          outPage.drawImage(cleanImg, { x: 0, y: 18, width: 595.28, height: 823.89 });
-
-          var brandText = "DocuLoom";
-          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
-          outPage.drawText(brandText, {
-            x: (595.28 - textWidth) / 2,
-            y: 6,
-            size: 8.5,
-            font: font,
-            color: PDFLib.rgb(0.4, 0.4, 0.4)
-          });
-        }
-
-        setProgress('cleaner', 'Finalizing document...', 95);
-        var cleanedBytes = await outDoc.save();
-        triggerDownload(cleanedBytes, 'Cleaned_' + file.name);
-
-        setProgress('cleaner', 'Complete!', 100);
-        msg.className = 'status-msg success';
-        msg.innerText = '✅ Cleaned PDF ready & downloaded!';
-      } catch (err) {
-        console.error(err);
-        msg.className = 'status-msg error';
-        msg.innerText = '❌ Error: ' + err.message;
-      } finally {
-        btn.disabled = false;
-      }
     }
 
-    // ==========================================
-    // 2. 4-IN-1 PRINT ENGINE
-    // ==========================================
-    async function execute4In1() {
-      var input = document.getElementById('nup-file');
-      var msg = document.getElementById('nup-msg');
-      var btn = document.getElementById('nup-btn');
 
-      if (!input.files || input.files.length === 0) {
-        alert('Please select a PDF file first!');
-        return;
-      }
+    function filterTools() {
 
-      var file = input.files[0];
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('nup', 'Reading slide dimensions...', 10);
+      const query =
+        searchInput.value
+          .toLowerCase()
+          .trim();
 
-      try {
-        var fileBytes = await file.arrayBuffer();
-        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
-        var outDoc = await PDFLib.PDFDocument.create();
-        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
-        var totalPages = srcDoc.getPageCount();
-        var firstPage = srcDoc.getPage(0);
-        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
+      toolCards.forEach(card => {
 
-        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
+        const searchableText =
+          card.dataset.search.toLowerCase();
 
-        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
-        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
 
-        var margin = 10;
-        var gap = 8;
-        var footerSpace = 16;
+        if (
+          query === "" ||
+          searchableText.includes(query)
+        ) {
 
-        var availWidth = SHEET_WIDTH - (margin * 2);
-        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+          card.style.display = "";
 
-        var slotW = (availWidth - gap) / 2;
-        var slotH = (availHeight - gap) / 2;
+        } else {
 
-        for (var i = 0; i < totalPages; i += 4) {
-          var pct = Math.round(10 + ((i / totalPages) * 80));
-          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+          card.style.display = "none";
 
-          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
-          var batch = embeddedPages.slice(i, i + 4);
-
-          var sample = batch[0];
-          var sampleSize = sample.scale(1);
-          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
-
-          var scaledW = sampleSize.width * scale;
-          var scaledH = sampleSize.height * scale;
-
-          var totalGridW = (scaledW * 2) + gap;
-          var totalGridH = (scaledH * 2) + gap;
-
-          var startX = (SHEET_WIDTH - totalGridW) / 2;
-          var startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
-
-          var gridCoords = [
-            { x: startX,                   y: startY + scaledH + gap },
-            { x: startX + scaledW + gap,    y: startY + scaledH + gap },
-            { x: startX,                   y: startY },
-            { x: startX + scaledW + gap,    y: startY }
-          ];
-
-          batch.forEach(function(p, idx) {
-            var pos = gridCoords[idx];
-            sheet.drawPage(p, {
-              x: pos.x,
-              y: pos.y,
-              xScale: scale,
-              yScale: scale
-            });
-          });
-
-          var brandText = "DocuLoom";
-          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
-          sheet.drawText(brandText, {
-            x: (SHEET_WIDTH - textWidth) / 2,
-            y: 6,
-            size: 8.5,
-            font: font,
-            color: PDFLib.rgb(0.4, 0.4, 0.4)
-          });
         }
 
-        setProgress('nup', 'Saving 4-in-1 PDF...', 95);
-        var pdfBytes = await outDoc.save();
-        triggerDownload(pdfBytes, 'DocuLoom_4in1_' + file.name);
+      });
 
-        setProgress('nup', 'Done!', 100);
-        msg.className = 'status-msg success';
-        msg.innerText = '✅ Converted ' + totalPages + ' pages into ' + Math.ceil(totalPages / 4) + ' printable sheets!';
-      } catch (err) {
-        console.error(err);
-        msg.className = 'status-msg error';
-        msg.innerText = '❌ Error: ' + err.message;
-      } finally {
-        btn.disabled = false;
-      }
     }
+
+
+    searchInput.addEventListener(
+      "input",
+      filterTools
+    );
+
+
+    function showComingSoon() {
+
+      alert(
+        "DocuLoom AI Document Assistant is coming soon!"
+      );
+
+    }
+
   </script>
+
 </body>
 </html>
