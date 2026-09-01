@@ -3,35 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DocuLoom — Free Client-Side PDF Tools</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>DocuLoom — Fast & Free PDF Tools</title>
+  <!-- Load standard PDF engine directly from CDN -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+      --primary: #e11d48;
+      --primary-hover: #be123c;
       --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
       --border: #e2e8f0;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.04);
-      --shadow-hover: 0 20px 25px -5px rgba(37,99,235,0.1), 0 8px 10px -6px rgba(37,99,235,0.04);
+      --radius: 12px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg);
-      color: var(--text-main);
-      line-height: 1.5;
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -41,339 +37,356 @@
       background: #ffffff;
       border-bottom: 1px solid var(--border);
       padding: 1rem 1.5rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      text-align: center;
     }
 
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary);
       text-decoration: none;
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--text-main);
     }
 
-    .brand-icon {
-      background: var(--primary);
-      color: white;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: grid;
-      place-items: center;
-      font-size: 1.1rem;
+    .brand span {
+      color: var(--text);
     }
 
-    .badge-privacy {
-      font-size: 0.8rem;
-      background: #ecfdf5;
-      color: #059669;
-      border: 1px solid #a7f3d0;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      font-weight: 600;
+    .nav-tabs {
       display: flex;
-      align-items: center;
-      gap: 0.35rem;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1.5rem 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.2rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
     }
 
     main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2.5rem 1.25rem;
+      max-width: 600px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
       flex: 1;
     }
 
-    .hero {
-      text-align: center;
-      max-width: 680px;
-      margin: 0 auto 3rem;
-    }
-
-    .hero h1 {
-      font-size: 2.25rem;
-      font-weight: 800;
-      letter-spacing: -0.025em;
-      color: #0f172a;
-      margin-bottom: 0.75rem;
-    }
-
-    .hero p {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
-    }
-
-    .card {
-      background: var(--card-bg);
+    .tool-card {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-sm);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      text-align: center;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: #93c5fd;
-      box-shadow: var(--shadow-hover);
-    }
-
-    .card-top {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.85rem;
-    }
-
-    .icon-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-size: 1.5rem;
-    }
-
-    .bg-red { background: #fee2e2; }
-    .bg-blue { background: #dbeafe; }
-    .bg-amber { background: #fef3c7; }
-    .bg-purple { background: #f3e8ff; }
-    .bg-emerald { background: #d1fae5; }
-    .bg-cyan { background: #cffafe; }
-
-    .card h2 {
-      font-size: 1.15rem;
+    .tool-title {
+      font-size: 1.3rem;
       font-weight: 700;
-      color: var(--text-main);
+      margin-bottom: 0.4rem;
     }
 
-    .card p {
+    .tool-desc {
       font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.45;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius);
+      padding: 2rem 1rem;
+      background: #f1f5f9;
+      cursor: pointer;
+      transition: border-color 0.2s;
       margin-bottom: 1.25rem;
     }
 
-    .card-action {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.85rem;
+    .dropzone:hover {
+      border-color: var(--primary);
+    }
+
+    .dropzone p {
+      font-size: 0.95rem;
       font-weight: 600;
-      color: var(--primary);
+      color: #334155;
+      margin-top: 0.5rem;
     }
 
-    .card-action span {
-      transition: transform 0.2s ease;
+    .dropzone span {
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
-    .card:hover .card-action span {
-      transform: translateX(4px);
+    .file-input {
+      display: none;
     }
 
-    .trust-banner {
-      margin-top: 3.5rem;
-      background: #ffffff;
+    .file-list {
+      text-align: left;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      background: #f8fafc;
+      padding: 0.75rem;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
+      display: none;
     }
 
-    .trust-icon {
-      font-size: 2rem;
-    }
-
-    .trust-text h3 {
+    .action-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.85rem;
       font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.25rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s;
     }
 
-    .trust-text p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
+    .action-btn:hover {
+      background: var(--primary-hover);
     }
+
+    .action-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-msg.success { color: #059669; }
+    .status-msg.error { color: #dc2626; }
 
     footer {
       text-align: center;
-      padding: 2rem 1.25rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
+      padding: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
       border-top: 1px solid var(--border);
       background: #ffffff;
-      margin-top: auto;
-    }
-
-    @media (max-width: 640px) {
-      .hero h1 {
-        font-size: 1.75rem;
-      }
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      .badge-privacy span {
-        display: none;
-      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="nav-container">
-      <a href="index.html" class="brand">
-        <div class="brand-icon">📄</div>
-        DocuLoom
-      </a>
-      <div class="badge-privacy">
-        🔒 <span>100% Private (No Uploads)</span>
-      </div>
-    </div>
+    <a href="#" class="brand">Docu<span>Loom</span></a>
   </header>
 
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('merge')">📑 Merge PDFs</button>
+    <button class="tab-btn" onclick="switchTab('img2pdf')">🖼️ Images to PDF</button>
+    <button class="tab-btn" onclick="switchTab('split')">✂️ Split PDF</button>
+  </div>
+
   <main>
-    <div class="hero">
-      <h1>Every tool you need to work with PDFs</h1>
-      <p>Free, fast, and processed entirely inside your browser. Your files never leave your device.</p>
-    </div>
+    <!-- MERGE PDFS TOOL -->
+    <div id="tab-merge" class="tool-card">
+      <h2 class="tool-title">Merge PDF Files</h2>
+      <p class="tool-desc">Combine 2 or more PDFs into a single document.</p>
 
-    <div class="grid">
-      <!-- Edit & Sign -->
-      <a href="edit.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-purple">✍️</div>
-            <h2>Edit & Sign</h2>
-          </div>
-          <p>Add text, draw signatures, insert highlights, watermarks, and crop pages.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- Compress PDF -->
-      <a href="compress.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-emerald">🗜️</div>
-            <h2>Compress PDF</h2>
-          </div>
-          <p>Reduce file size quickly while preserving readability and high quality.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- Merge & Organize -->
-      <a href="organize.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-blue">📑</div>
-            <h2>Merge & Organize</h2>
-          </div>
-          <p>Combine multiple PDFs, rearrange page order, rotate, or remove unwanted pages.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- Split PDF -->
-      <a href="split.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-amber">✂️</div>
-            <h2>Split PDF</h2>
-          </div>
-          <p>Separate a PDF into single pages or extract specific page ranges easily.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- JPG/PNG to PDF -->
-      <a href="images-to-pdf.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-red">🖼️</div>
-            <h2>Images to PDF</h2>
-          </div>
-          <p>Convert JPG, PNG, and WebP images into a single, clean PDF file.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- PDF to Images -->
-      <a href="pdf-to-images.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-cyan">📷</div>
-            <h2>PDF to Images</h2>
-          </div>
-          <p>Export all PDF pages as high-resolution JPG or PNG images instantly.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-
-      <!-- N-Up Layout -->
-      <a href="n-up.html" class="card">
-        <div>
-          <div class="card-top">
-            <div class="icon-box bg-purple">📄</div>
-            <h2>Multi-Page Layout</h2>
-          </div>
-          <p>Print layouts: combine 2, 4, 6, or 9 pages onto a single sheet.</p>
-        </div>
-        <div class="card-action">
-          Open tool <span>→</span>
-        </div>
-      </a>
-    </div>
-
-    <div class="trust-banner">
-      <div class="trust-icon">🛡️</div>
-      <div class="trust-text">
-        <h3>Zero-Server Architecture</h3>
-        <p>All processing is executed on your local CPU via WebAssembly & JavaScript. Documents are never transmitted to any external server.</p>
+      <div class="dropzone" onclick="document.getElementById('merge-input').click()">
+        📁
+        <p>Select PDF Files</p>
+        <span>or drag & drop PDFs here</span>
       </div>
+      <input type="file" id="merge-input" class="file-input" multiple accept="application/pdf" onchange="handleMergeFiles(this.files)" />
+
+      <div id="merge-files" class="file-list"></div>
+      <button id="merge-btn" class="action-btn" disabled onclick="processMerge()">Merge & Download</button>
+      <div id="merge-status" class="status-msg"></div>
+    </div>
+
+    <!-- IMAGES TO PDF TOOL -->
+    <div id="tab-img2pdf" class="tool-card" style="display: none;">
+      <h2 class="tool-title">Convert Images to PDF</h2>
+      <p class="tool-desc">Turn JPG and PNG images into a clean PDF file.</p>
+
+      <div class="dropzone" onclick="document.getElementById('img-input').click()">
+        🖼️
+        <p>Select Image Files</p>
+        <span>JPG, PNG accepted</span>
+      </div>
+      <input type="file" id="img-input" class="file-input" multiple accept="image/jpeg, image/png" onchange="handleImgFiles(this.files)" />
+
+      <div id="img-files" class="file-list"></div>
+      <button id="img-btn" class="action-btn" disabled onclick="processImagesToPdf()">Convert & Download</button>
+      <div id="img-status" class="status-msg"></div>
+    </div>
+
+    <!-- SPLIT PDF TOOL -->
+    <div id="tab-split" class="tool-card" style="display: none;">
+      <h2 class="tool-title">Split First Page of PDF</h2>
+      <p class="tool-desc">Extract the first page of any PDF instantly.</p>
+
+      <div class="dropzone" onclick="document.getElementById('split-input').click()">
+        ✂️
+        <p>Select PDF File</p>
+        <span>One PDF at a time</span>
+      </div>
+      <input type="file" id="split-input" class="file-input" accept="application/pdf" onchange="handleSplitFile(this.files)" />
+
+      <div id="split-files" class="file-list"></div>
+      <button id="split-btn" class="action-btn" disabled onclick="processSplit()">Extract Page 1 & Download</button>
+      <div id="split-status" class="status-msg"></div>
     </div>
   </main>
 
   <footer>
-    <p>DocuLoom © 2026 — 100% Client-Side PDF Toolkit</p>
+    100% Free & Client-Side. No files are uploaded to any server.
   </footer>
 
+  <script>
+    const { PDFDocument } = PDFLib;
+
+    function switchTab(tool) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('tab-merge').style.display = tool === 'merge' ? 'block' : 'none';
+      document.getElementById('tab-img2pdf').style.display = tool === 'img2pdf' ? 'block' : 'none';
+      document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
+    }
+
+    // --- MERGE LOGIC ---
+    let mergeFileList = [];
+    function handleMergeFiles(files) {
+      mergeFileList = Array.from(files);
+      const box = document.getElementById('merge-files');
+      if (mergeFileList.length > 0) {
+        box.style.display = 'block';
+        box.innerHTML = `<strong>Selected:</strong><br>` + mergeFileList.map(f => `• ${f.name}`).join('<br>');
+        document.getElementById('merge-btn').disabled = false;
+      }
+    }
+
+    async function processMerge() {
+      const status = document.getElementById('merge-status');
+      status.className = 'status-msg';
+      status.innerText = 'Processing locally...';
+
+      try {
+        const mergedPdf = await PDFDocument.create();
+        for (const file of mergeFileList) {
+          const bytes = await file.arrayBuffer();
+          const pdf = await PDFDocument.load(bytes);
+          const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          pages.forEach(page => mergedPdf.addPage(page));
+        }
+        const pdfBytes = await mergedPdf.save();
+        downloadBlob(pdfBytes, 'merged_document.pdf', 'application/pdf');
+        status.className = 'status-msg success';
+        status.innerText = 'Done! Your file downloaded automatically.';
+      } catch (err) {
+        status.className = 'status-msg error';
+        status.innerText = 'Error: Could not merge the files.';
+      }
+    }
+
+    // --- IMAGES TO PDF LOGIC ---
+    let imgFileList = [];
+    function handleImgFiles(files) {
+      imgFileList = Array.from(files);
+      const box = document.getElementById('img-files');
+      if (imgFileList.length > 0) {
+        box.style.display = 'block';
+        box.innerHTML = `<strong>Selected:</strong><br>` + imgFileList.map(f => `• ${f.name}`).join('<br>');
+        document.getElementById('img-btn').disabled = false;
+      }
+    }
+
+    async function processImagesToPdf() {
+      const status = document.getElementById('img-status');
+      status.className = 'status-msg';
+      status.innerText = 'Generating PDF...';
+
+      try {
+        const pdfDoc = await PDFDocument.create();
+        for (const file of imgFileList) {
+          const bytes = await file.arrayBuffer();
+          let img;
+          if (file.type === 'image/jpeg' || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) {
+            img = await pdfDoc.embedJpg(bytes);
+          } else {
+            img = await pdfDoc.embedPng(bytes);
+          }
+          const page = pdfDoc.addPage([img.width, img.height]);
+          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        }
+        const pdfBytes = await pdfDoc.save();
+        downloadBlob(pdfBytes, 'converted_images.pdf', 'application/pdf');
+        status.className = 'status-msg success';
+        status.innerText = 'Done! Your PDF downloaded.';
+      } catch (err) {
+        status.className = 'status-msg error';
+        status.innerText = 'Error: Only JPG/PNG images are supported.';
+      }
+    }
+
+    // --- SPLIT LOGIC ---
+    let splitFile = null;
+    function handleSplitFile(files) {
+      splitFile = files[0];
+      const box = document.getElementById('split-files');
+      if (splitFile) {
+        box.style.display = 'block';
+        box.innerHTML = `<strong>Selected:</strong> ${splitFile.name}`;
+        document.getElementById('split-btn').disabled = false;
+      }
+    }
+
+    async function processSplit() {
+      const status = document.getElementById('split-status');
+      status.className = 'status-msg';
+      status.innerText = 'Extracting page...';
+
+      try {
+        const bytes = await splitFile.arrayBuffer();
+        const srcPdf = await PDFDocument.load(bytes);
+        const newPdf = await PDFDocument.create();
+        const [firstPage] = await newPdf.copyPages(srcPdf, [0]);
+        newPdf.addPage(firstPage);
+
+        const pdfBytes = await newPdf.save();
+        downloadBlob(pdfBytes, 'extracted_page_1.pdf', 'application/pdf');
+        status.className = 'status-msg success';
+        status.innerText = 'Done! Extracted page downloaded.';
+      } catch (err) {
+        status.className = 'status-msg error';
+        status.innerText = 'Error: Failed to extract page.';
+      }
+    }
+
+    function downloadBlob(bytes, filename, type) {
+      const blob = new Blob([bytes], { type });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+  </script>
 </body>
 </html>
+
