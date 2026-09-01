@@ -196,14 +196,32 @@
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('merge')">📑 Merge PDFs</button>
-    <button class="tab-btn" onclick="switchTab('img2pdf')">🖼️ Images to PDF</button>
-    <button class="tab-btn" onclick="switchTab('split')">✂️ Split PDF</button>
+    <button class="tab-btn active" onclick="switchTab('nup', this)">📄 4 Pages in 1</button>
+    <button class="tab-btn" onclick="switchTab('merge', this)">📑 Merge PDFs</button>
+    <button class="tab-btn" onclick="switchTab('img2pdf', this)">🖼️ Images to PDF</button>
+    <button class="tab-btn" onclick="switchTab('split', this)">✂️ Split PDF</button>
   </div>
 
   <main>
+    <!-- 4 IN 1 N-UP TOOL -->
+    <div id="tab-nup" class="tool-card">
+      <h2 class="tool-title">4 Pages in 1 Sheet (N-Up)</h2>
+      <p class="tool-desc">Fit 4 pages onto a single sheet in a 2×2 grid layout (100 pages → 25 pages).</p>
+
+      <div class="dropzone" onclick="document.getElementById('nup-input').click()">
+        📄
+        <p>Select PDF File</p>
+        <span>One PDF at a time</span>
+      </div>
+      <input type="file" id="nup-input" class="file-input" accept="application/pdf" onchange="handleNupFile(this.files)" />
+
+      <div id="nup-files" class="file-list"></div>
+      <button id="nup-btn" class="action-btn" disabled onclick="process4In1()">Convert to 4-in-1 & Download</button>
+      <div id="nup-status" class="status-msg"></div>
+    </div>
+
     <!-- MERGE PDFS TOOL -->
-    <div id="tab-merge" class="tool-card">
+    <div id="tab-merge" class="tool-card" style="display: none;">
       <h2 class="tool-title">Merge PDF Files</h2>
       <p class="tool-desc">Combine 2 or more PDFs into a single document.</p>
 
@@ -259,15 +277,87 @@
   </footer>
 
   <script>
-    const { PDFDocument } = PDFLib;
+    const { PDFDocument, degrees } = PDFLib;
 
-    function switchTab(tool) {
+    function switchTab(tool, el) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      el.classList.add('active');
 
+      document.getElementById('tab-nup').style.display = tool === 'nup' ? 'block' : 'none';
       document.getElementById('tab-merge').style.display = tool === 'merge' ? 'block' : 'none';
       document.getElementById('tab-img2pdf').style.display = tool === 'img2pdf' ? 'block' : 'none';
       document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
+    }
+
+    // --- 4-IN-1 (N-UP) LOGIC ---
+    let nupFile = null;
+    function handleNupFile(files) {
+      nupFile = files[0];
+      const box = document.getElementById('nup-files');
+      if (nupFile) {
+        box.style.display = 'block';
+        box.innerHTML = `<strong>Selected:</strong> ${nupFile.name}`;
+        document.getElementById('nup-btn').disabled = false;
+      }
+    }
+
+    async function process4In1() {
+      const status = document.getElementById('nup-status');
+      status.className = 'status-msg';
+      status.innerText = 'Creating 4-in-1 layout...';
+
+      try {
+        const fileBytes = await nupFile.arrayBuffer();
+        const srcDoc = await PDFDocument.load(fileBytes);
+        const outDoc = await PDFDocument.create();
+
+        const totalPages = srcDoc.getPageCount();
+        const embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
+
+        const SHEET_WIDTH = 595.28;  // A4 standard points
+        const SHEET_HEIGHT = 841.89;
+        const halfW = SHEET_WIDTH / 2;
+        const halfH = SHEET_HEIGHT / 2;
+
+        for (let i = 0; i < totalPages; i += 4) {
+          const sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
+          const batch = embeddedPages.slice(i, i + 4);
+
+          // Grid positions: [Top-Left, Top-Right, Bottom-Left, Bottom-Right]
+          const slots = [
+            { x: 0,     y: halfH },
+            { x: halfW, y: halfH },
+            { x: 0,     y: 0 },
+            { x: halfW, y: 0 }
+          ];
+
+          batch.forEach((embeddedPage, idx) => {
+            const { width, height } = embeddedPage.scale(1);
+            const scale = Math.min((halfW - 10) / width, (halfH - 10) / height);
+            const scaledW = width * scale;
+            const scaledH = height * scale;
+
+            const slot = slots[idx];
+            const offsetX = slot.x + (halfW - scaledW) / 2;
+            const offsetY = slot.y + (halfH - scaledH) / 2;
+
+            sheet.drawPage(embeddedPage, {
+              x: offsetX,
+              y: offsetY,
+              xScale: scale,
+              yScale: scale
+            });
+          });
+        }
+
+        const pdfBytes = await outDoc.save();
+        downloadBlob(pdfBytes, '4_in_1_' + nupFile.name, 'application/pdf');
+        status.className = 'status-msg success';
+        status.innerText = `Done! Converted ${totalPages} pages into ${Math.ceil(totalPages / 4)} pages.`;
+      } catch (err) {
+        status.className = 'status-msg error';
+        status.innerText = 'Error: Failed to convert PDF to 4-in-1.';
+      }
     }
 
     // --- MERGE LOGIC ---
@@ -389,4 +479,3 @@
   </script>
 </body>
 </html>
-
