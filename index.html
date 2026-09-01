@@ -1,890 +1,645 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DocuLoom — Free Student PDF & Exam Form Tools</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
-  <title>DocuLoom - Free PDF Tools Online | Edit, Merge, Compress & Convert PDF</title>
+  <style>
+    :root {
+      --primary: #e11d48;
+      --primary-hover: #be123c;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+      --accent: #10b981;
+      --radius: 14px;
+    }
 
-  <meta
-    name="description"
-    content="DocuLoom offers free online PDF tools. Edit PDF, merge PDF, split PDF, compress PDF, convert PDF to Word, PDF to JPG, sign PDF and more."
-  >
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  <meta
-    name="keywords"
-    content="PDF editor, edit PDF, PDF editor online, merge PDF, compress PDF, split PDF, PDF to Word, PDF to JPG, convert PDF, sign PDF, free PDF tools"
-  >
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-  <meta name="robots" content="index, follow">
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 1rem;
+      text-align: center;
+    }
 
-  <link rel="canonical" href="https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/">
+    .brand {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
 
-  <meta name="theme-color" content="#6d4aff">
+    .brand span {
+      color: #ffffff;
+    }
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="DocuLoom - Free Online PDF Tools">
-  <meta
-    property="og:description"
-    content="Edit, merge, compress, split, convert and manage PDFs online for free."
-  >
-  <meta property="og:url" content="https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/">
-  <meta property="og:site_name" content="DocuLoom">
+    .tagline {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="DocuLoom - Free PDF Tools">
-  <meta
-    name="twitter:description"
-    content="Free online tools for editing, converting, compressing and managing PDF documents."
-  >
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1.25rem 1rem 0;
+      flex-wrap: wrap;
+    }
 
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    .tab-btn {
+      flex: 1;
+      max-width: 220px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-  <link rel="stylesheet" href="style.css">
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+    }
+
+    main {
+      max-width: 540px;
+      width: 100%;
+      margin: 1.2rem auto;
+      padding: 0 1rem;
+      flex: 1;
+    }
+
+    .tool-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.25rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .tool-panel.active {
+      display: block;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      margin-bottom: 0.6rem;
+      text-transform: uppercase;
+    }
+
+    .tool-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+
+    .tool-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .upload-box {
+      background: #0f172a;
+      border: 2px dashed #475569;
+      border-radius: var(--radius);
+      padding: 1.5rem 1rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .upload-box label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: block;
+      margin-bottom: 0.6rem;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 0.6rem;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .file-details {
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin-top: 0.75rem;
+      padding: 0.6rem;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 6px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      display: none;
+      word-break: break-all;
+    }
+
+    .control-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+      background: #0f172a;
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .control-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .control-group select {
+      width: 100%;
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid var(--border);
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.95rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+    }
+
+    .action-btn:disabled {
+      background: #475569;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .progress-box {
+      display: none;
+      margin-top: 1.25rem;
+      text-align: left;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #334155;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.15s ease;
+    }
+
+    .status-msg {
+      margin-top: 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .status-msg.success { color: var(--accent); }
+    .status-msg.error { color: #f87171; }
+
+    /* Viral Share Box */
+    .share-card {
+      margin-top: 1.5rem;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .share-card p {
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #25d366;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.65rem 1.25rem;
+      border-radius: 9999px;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: #1e293b;
+      margin-top: auto;
+    }
+  </style>
 </head>
-
 <body>
 
-  <!-- HEADER -->
-
-  <header class="site-header">
-
-    <div class="container header-inner">
-
-      <a href="./" class="logo">
-        <span class="logo-icon">D</span>
-        <span>DocuLoom</span>
-      </a>
-
-      <nav class="navigation">
-
-        <a href="#tools">PDF Tools</a>
-        <a href="#popular">Popular</a>
-        <a href="#features">Features</a>
-
-      </nav>
-
-      <a href="#tools" class="header-button">
-        Explore Tools
-      </a>
-
-    </div>
-
+  <header>
+    <a href="index.html" class="brand">Docu<span>Loom</span></a>
+    <div class="tagline">100% Free Client-Side Student & Exam Toolkit</div>
   </header>
 
-
-  <!-- HERO -->
+  <div class="nav-tabs">
+    <button id="btn-tab-nup" class="tab-btn active" onclick="switchTab('nup')">📄 4-in-1 Print Saver</button>
+    <button id="btn-tab-exam" class="tab-btn" onclick="switchTab('exam')">🪪 Exam Photo/Sign Resizer</button>
+    <button id="btn-tab-img2pdf" class="tab-btn" onclick="switchTab('img2pdf')">🖼️ Images to PDF</button>
+  </div>
 
   <main>
+    <div id="panel-nup" class="tool-panel active">
+      <span class="badge">🔥 Save 75% Printing Cost</span>
+      <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
+      <p class="tool-desc">Fits 4 lecture slides onto a single sheet in high resolution without blank gaps.</p>
 
-    <section class="hero">
-
-      <div class="container hero-content">
-
-        <div class="hero-badge">
-          ✨ Free online document tools
-        </div>
-
-        <h1>
-          Everything you need to
-          <span>work with PDFs.</span>
-        </h1>
-
-        <p class="hero-description">
-          Edit, merge, compress, split, convert and manage your documents
-          with simple online tools.
-        </p>
-
-
-        <!-- SEARCH -->
-
-        <div class="tool-search">
-
-          <label for="toolSearch">
-            Search PDF tools
-          </label>
-
-          <div class="search-box">
-
-            <span class="search-icon">⌕</span>
-
-            <input
-              id="toolSearch"
-              type="search"
-              placeholder="Try “edit PDF”, “compress PDF”, “PDF to Word”..."
-              autocomplete="off"
-            >
-
-          </div>
-
-        </div>
-
-
-        <div class="quick-searches">
-
-          <span>Popular:</span>
-
-          <button onclick="searchTool('Edit PDF')">
-            Edit PDF
-          </button>
-
-          <button onclick="searchTool('Merge PDF')">
-            Merge PDF
-          </button>
-
-          <button onclick="searchTool('Compress PDF')">
-            Compress PDF
-          </button>
-
-          <button onclick="searchTool('PDF to Word')">
-            PDF to Word
-          </button>
-
-        </div>
-
+      <div class="upload-box">
+        <label for="nup-file">Select Slides/Notes PDF:</label>
+        <input type="file" id="nup-file" accept="application/pdf" />
+        <div id="nup-info" class="file-details"></div>
       </div>
 
-    </section>
+      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
 
-
-    <!-- POPULAR TOOLS -->
-
-    <section id="popular" class="section">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <div>
-
-            <p class="eyebrow">
-              MOST USED
-            </p>
-
-            <h2>
-              Popular PDF tools
-            </h2>
-
-          </div>
-
-          <p>
-            Quickly find the tool you need.
-          </p>
-
+      <div id="nup-progress" class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
+          <span id="nup-prog-text">Converting...</span>
+          <span id="nup-prog-pct">0%</span>
         </div>
-
-
-        <div class="tool-grid">
-
-
-          <!-- EDIT PDF -->
-
-          <a
-            href="edit-pdf.html"
-            class="tool-card featured-tool"
-            data-search="edit pdf pdf editor edit pdf online"
-          >
-
-            <div class="tool-icon purple">
-              ✎
-            </div>
-
-            <div>
-
-              <h3>
-                Edit PDF
-              </h3>
-
-              <p>
-                Edit text, add images, annotate and modify PDF documents.
-              </p>
-
-              <span class="tool-link">
-                Edit PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- MERGE -->
-
-          <a
-            href="merge-pdf.html"
-            class="tool-card"
-            data-search="merge pdf combine pdf join pdf"
-          >
-
-            <div class="tool-icon blue">
-              ＋
-            </div>
-
-            <div>
-
-              <h3>
-                Merge PDF
-              </h3>
-
-              <p>
-                Combine multiple PDF files into one document.
-              </p>
-
-              <span class="tool-link">
-                Merge PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- COMPRESS -->
-
-          <a
-            href="compress-pdf.html"
-            class="tool-card"
-            data-search="compress pdf reduce pdf size smaller pdf"
-          >
-
-            <div class="tool-icon green">
-              ↓
-            </div>
-
-            <div>
-
-              <h3>
-                Compress PDF
-              </h3>
-
-              <p>
-                Reduce PDF file size while keeping your document readable.
-              </p>
-
-              <span class="tool-link">
-                Compress PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- SPLIT -->
-
-          <a
-            href="split-pdf.html"
-            class="tool-card"
-            data-search="split pdf extract pdf pages"
-          >
-
-            <div class="tool-icon orange">
-              ✂
-            </div>
-
-            <div>
-
-              <h3>
-                Split PDF
-              </h3>
-
-              <p>
-                Extract pages or split a PDF into separate documents.
-              </p>
-
-              <span class="tool-link">
-                Split PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- PDF TO WORD -->
-
-          <a
-            href="pdf-to-word.html"
-            class="tool-card"
-            data-search="pdf to word convert pdf to docx"
-          >
-
-            <div class="tool-icon indigo">
-              W
-            </div>
-
-            <div>
-
-              <h3>
-                PDF to Word
-              </h3>
-
-              <p>
-                Convert PDF documents into editable Word files.
-              </p>
-
-              <span class="tool-link">
-                PDF to Word →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- PDF TO JPG -->
-
-          <a
-            href="pdf-to-jpg.html"
-            class="tool-card"
-            data-search="pdf to jpg pdf to image convert pdf"
-          >
-
-            <div class="tool-icon pink">
-              ◉
-            </div>
-
-            <div>
-
-              <h3>
-                PDF to JPG
-              </h3>
-
-              <p>
-                Convert PDF pages into JPG images.
-              </p>
-
-              <span class="tool-link">
-                PDF to JPG →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- JPG TO PDF -->
-
-          <a
-            href="jpg-to-pdf.html"
-            class="tool-card"
-            data-search="jpg to pdf image to pdf convert jpg"
-          >
-
-            <div class="tool-icon red">
-              ▣
-            </div>
-
-            <div>
-
-              <h3>
-                JPG to PDF
-              </h3>
-
-              <p>
-                Turn images and JPG files into PDF documents.
-              </p>
-
-              <span class="tool-link">
-                JPG to PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-
-          <!-- SIGN PDF -->
-
-          <a
-            href="sign-pdf.html"
-            class="tool-card"
-            data-search="sign pdf electronic signature pdf"
-          >
-
-            <div class="tool-icon teal">
-              ✓
-            </div>
-
-            <div>
-
-              <h3>
-                Sign PDF
-              </h3>
-
-              <p>
-                Add your signature to PDF documents online.
-              </p>
-
-              <span class="tool-link">
-                Sign PDF →
-              </span>
-
-            </div>
-
-          </a>
-
-        </div>
-
+        <div class="progress-bar-bg"><div id="nup-prog-fill" class="progress-bar-fill"></div></div>
+      </div>
+      <div id="nup-msg" class="status-msg"></div>
+    </div>
+
+    <div id="panel-exam" class="tool-panel">
+      <span class="badge">🎯 CSIR NET / UPSC / SSC / GATE Ready</span>
+      <h2 class="tool-title">Exam Photo & Sign Resizer</h2>
+      <p class="tool-desc">Compresses photos & signatures to exact dimensions and strict file size limits (e.g. Under 50 KB).</p>
+
+      <div class="upload-box">
+        <label for="exam-file">Select Passport Photo or Signature Image:</label>
+        <input type="file" id="exam-file" accept="image/jpeg, image/png, image/jpg" />
+        <div id="exam-info" class="file-details"></div>
       </div>
 
-    </section>
-
-
-    <!-- ALL TOOLS -->
-
-    <section id="tools" class="section all-tools">
-
-      <div class="container">
-
-        <div class="section-heading">
-
-          <div>
-
-            <p class="eyebrow">
-              DOCULOOM TOOLBOX
-            </p>
-
-            <h2>
-              All PDF tools
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        <div class="category-grid">
-
-
-          <div class="category">
-
-            <h3>
-              PDF Editing
-            </h3>
-
-            <a href="edit-pdf.html">
-              Edit PDF
-            </a>
-
-            <a href="annotate-pdf.html">
-              Annotate PDF
-            </a>
-
-            <a href="sign-pdf.html">
-              Sign PDF
-            </a>
-
-            <a href="watermark-pdf.html">
-              Add Watermark
-            </a>
-
-          </div>
-
-
-          <div class="category">
-
-            <h3>
-              PDF Organization
-            </h3>
-
-            <a href="merge-pdf.html">
-              Merge PDF
-            </a>
-
-            <a href="split-pdf.html">
-              Split PDF
-            </a>
-
-            <a href="rotate-pdf.html">
-              Rotate PDF
-            </a>
-
-            <a href="delete-pdf-pages.html">
-              Delete PDF Pages
-            </a>
-
-          </div>
-
-
-          <div class="category">
-
-            <h3>
-              PDF Conversion
-            </h3>
-
-            <a href="pdf-to-word.html">
-              PDF to Word
-            </a>
-
-            <a href="pdf-to-jpg.html">
-              PDF to JPG
-            </a>
-
-            <a href="jpg-to-pdf.html">
-              JPG to PDF
-            </a>
-
-            <a href="pdf-to-text.html">
-              PDF to Text
-            </a>
-
-          </div>
-
-
-          <div class="category">
-
-            <h3>
-              PDF Optimization
-            </h3>
-
-            <a href="compress-pdf.html">
-              Compress PDF
-            </a>
-
-            <a href="repair-pdf.html">
-              Repair PDF
-            </a>
-
-            <a href="ocr-pdf.html">
-              OCR PDF
-            </a>
-
-            <a href="flatten-pdf.html">
-              Flatten PDF
-            </a>
-
-          </div>
-
-        </div>
-
+      <div class="control-group">
+        <label>Exam Preset / Max Size Requirement:</label>
+        <select id="exam-preset">
+          <option value="photo_50">Passport Photo (Max 50 KB, 3.5cm x 4.5cm)</option>
+          <option value="sign_20">Signature Image (Max 20 KB, 3.5cm x 1.5cm)</option>
+          <option value="photo_100">Photo / Certificate (Max 100 KB)</option>
+          <option value="custom_200">Form Document (Max 200 KB)</option>
+        </select>
       </div>
 
-    </section>
+      <button id="exam-btn" class="action-btn" onclick="executeExamResize()">Resize & Download JPG</button>
+      <div id="exam-msg" class="status-msg"></div>
+    </div>
 
+    <div id="panel-img2pdf" class="tool-panel">
+      <span class="badge">⚡ High Resolution</span>
+      <h2 class="tool-title">Convert Images to PDF</h2>
+      <p class="tool-desc">Merge multiple photos, handwritten assignments, or notes into one clean PDF document.</p>
 
-    <!-- AI SECTION -->
-
-    <section id="features" class="ai-section">
-
-      <div class="container">
-
-        <div class="ai-card">
-
-          <div class="ai-content">
-
-            <p class="eyebrow">
-              COMING SOON
-            </p>
-
-            <h2>
-              Ask DocuLoom what your document means.
-            </h2>
-
-            <p>
-              Upload or paste a complicated document and get a simple
-              explanation, summary, key points and questions.
-            </p>
-
-            <button class="primary-button" onclick="showComingSoon()">
-              Try AI Document Assistant
-            </button>
-
-          </div>
-
-          <div class="ai-visual">
-
-            <div class="ai-window">
-
-              <div class="ai-question">
-                What does this document actually say?
-              </div>
-
-              <div class="ai-answer">
-                <strong>Simple explanation</strong>
-
-                <p>
-                  This document explains the main terms,
-                  important dates and actions you need to take.
-                </p>
-
-                <div class="ai-points">
-
-                  <span>✓ Key dates</span>
-                  <span>✓ Important terms</span>
-                  <span>✓ Action items</span>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
+      <div class="upload-box">
+        <label for="img-file">Select Image(s) (JPG/PNG):</label>
+        <input type="file" id="img-file" multiple accept="image/jpeg, image/png" />
+        <div id="img-info" class="file-details"></div>
       </div>
 
-    </section>
+      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert to PDF & Download</button>
 
-
-    <!-- WHY DOCULOOM -->
-
-    <section class="section">
-
-      <div class="container">
-
-        <div class="section-heading centered">
-
-          <p class="eyebrow">
-            WHY DOCULOOM
-          </p>
-
-          <h2>
-            Simple document tools.
-          </h2>
-
-          <p>
-            No complicated software. Just choose a tool and get started.
-          </p>
-
+      <div id="img-progress" class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
+          <span id="img-prog-text">Converting...</span>
+          <span id="img-prog-pct">0%</span>
         </div>
-
-
-        <div class="benefits">
-
-          <div class="benefit">
-
-            <div>⚡</div>
-
-            <h3>
-              Fast
-            </h3>
-
-            <p>
-              Simple tools designed to get your document work done quickly.
-            </p>
-
-          </div>
-
-
-          <div class="benefit">
-
-            <div>🔒</div>
-
-            <h3>
-              Privacy focused
-            </h3>
-
-            <p>
-              We aim to process documents safely and keep the experience simple.
-            </p>
-
-          </div>
-
-
-          <div class="benefit">
-
-            <div>📱</div>
-
-            <h3>
-              Works everywhere
-            </h3>
-
-            <p>
-              Use DocuLoom from your phone, tablet or computer.
-            </p>
-
-          </div>
-
-        </div>
-
+        <div class="progress-bar-bg"><div id="img-prog-fill" class="progress-bar-fill"></div></div>
       </div>
+      <div id="img-msg" class="status-msg"></div>
+    </div>
 
-    </section>
-
-
-    <!-- SEO CONTENT -->
-
-    <section class="seo-section">
-
-      <div class="container seo-content">
-
-        <h2>
-          Free online PDF tools
-        </h2>
-
-        <p>
-          DocuLoom is an online document toolbox designed to make everyday
-          PDF tasks easier. You can use tools to edit PDF files, merge
-          multiple PDFs, compress large documents, split PDF pages,
-          convert PDFs to Word or JPG and sign documents online.
-        </p>
-
-        <p>
-          Whether you need to edit a PDF, reduce its file size, convert a
-          document or organize PDF pages, DocuLoom brings commonly used
-          document tools together in one place.
-        </p>
-
-        <h2>
-          Edit PDF online
-        </h2>
-
-        <p>
-          Use the DocuLoom PDF editor to make changes to documents,
-          annotate pages and prepare files for sharing.
-        </p>
-
-        <h2>
-          Compress PDF files
-        </h2>
-
-        <p>
-          Large PDF files can be difficult to upload or share. DocuLoom's
-          PDF compression tool is designed to help reduce document size.
-        </p>
-
-        <h2>
-          Convert PDF files
-        </h2>
-
-        <p>
-          Convert PDF documents to common formats such as Word, JPG and
-          text when you need to reuse information from a document.
-        </p>
-
-      </div>
-
-    </section>
-
+    <div class="share-card">
+      <p>🚀 Share DocuLoom with classmates & save xerox costs!</p>
+      <a href="https://api.whatsapp.com/send?text=Hey%21%20Use%20this%20free%20tool%20to%20fit%204%20lecture%20slides%20into%201%20page%20for%20cheap%20printing%20and%20resize%20exam%20photos%3A%20https%3A%2F%2Fchandanlalmallick.github.io%2Fdoculoom%2F" target="_blank" class="share-btn">
+        <span>📲 Share on WhatsApp</span>
+      </a>
+    </div>
   </main>
 
-
-  <!-- FOOTER -->
-
-  <footer class="footer">
-
-    <div class="container footer-inner">
-
-      <div>
-
-        <div class="logo">
-          <span class="logo-icon">D</span>
-          <span>DocuLoom</span>
-        </div>
-
-        <p>
-          Simple tools for your documents.
-        </p>
-
-      </div>
-
-
-      <div class="footer-links">
-
-        <a href="#tools">
-          PDF Tools
-        </a>
-
-        <a href="#popular">
-          Popular Tools
-        </a>
-
-        <a href="#features">
-          AI Assistant
-        </a>
-
-      </div>
-
-    </div>
-
-
-    <div class="container copyright">
-
-      © 2026 DocuLoom. All rights reserved.
-
-    </div>
-
+  <footer>
+    DocuLoom — 100% Free & Client-Side. Files never leave your browser.
   </footer>
 
-
   <script>
-
-    const searchInput = document.getElementById("toolSearch");
-
-    const toolCards = document.querySelectorAll(".tool-card");
-
-
-    function searchTool(query) {
-
-      searchInput.value = query;
-
-      searchInput.focus();
-
-      filterTools();
-
-      document
-        .getElementById("popular")
-        .scrollIntoView({
-          behavior: "smooth"
-        });
-
+    function switchTab(tabId) {
+      ['nup', 'exam', 'img2pdf'].forEach(function(t) {
+        document.getElementById('panel-' + t).classList.toggle('active', t === tabId);
+        document.getElementById('btn-tab-' + t).classList.toggle('active', t === tabId);
+      });
     }
 
+    document.getElementById('nup-file').addEventListener('change', function(e) {
+      var info = document.getElementById('nup-info');
+      if (e.target.files && e.target.files.length > 0) {
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
+      }
+    });
 
-    function filterTools() {
+    document.getElementById('exam-file').addEventListener('change', function(e) {
+      var info = document.getElementById('exam-info');
+      if (e.target.files && e.target.files.length > 0) {
+        var f = e.target.files[0];
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected:</strong> ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
+      }
+    });
 
-      const query =
-        searchInput.value
-          .toLowerCase()
-          .trim();
+    document.getElementById('img-file').addEventListener('change', function(e) {
+      var info = document.getElementById('img-info');
+      if (e.target.files && e.target.files.length > 0) {
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected ' + e.target.files.length + ' image(s)</strong>';
+      }
+    });
 
+    function setProgress(prefix, text, pct) {
+      var wrap = document.getElementById(prefix + '-progress');
+      var txt = document.getElementById(prefix + '-prog-text');
+      var pctLabel = document.getElementById(prefix + '-prog-pct');
+      var fill = document.getElementById(prefix + '-prog-fill');
+      if (wrap) wrap.style.display = 'block';
+      if (txt) txt.innerText = text;
+      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
+      if (fill) fill.style.width = pct + '%';
+    }
 
-      toolCards.forEach(card => {
+    function triggerDownload(blob, filename) {
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
-        const searchableText =
-          card.dataset.search.toLowerCase();
+    // --- 1. 4-IN-1 PRINT ENGINE ---
+    async function execute4In1() {
+      var input = document.getElementById('nup-file');
+      var msg = document.getElementById('nup-msg');
+      var btn = document.getElementById('nup-btn');
 
+      if (!input.files || input.files.length === 0) {
+        alert('Please select a PDF file first!');
+        return;
+      }
 
-        if (
-          query === "" ||
-          searchableText.includes(query)
-        ) {
+      var file = input.files[0];
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.innerText = '';
+      setProgress('nup', 'Analyzing document...', 10);
 
-          card.style.display = "";
+      try {
+        var fileBytes = await file.arrayBuffer();
+        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
+        var outDoc = await PDFLib.PDFDocument.create();
+        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
-        } else {
+        var totalPages = srcDoc.getPageCount();
+        var firstPage = srcDoc.getPage(0);
+        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
 
-          card.style.display = "none";
+        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
 
+        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
+        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
+
+        var margin = 10;
+        var gap = 8;
+        var footerSpace = 16;
+
+        var availWidth = SHEET_WIDTH - (margin * 2);
+        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+
+        var slotW = (availWidth - gap) / 2;
+        var slotH = (availHeight - gap) / 2;
+
+        for (var i = 0; i < totalPages; i += 4) {
+          var pct = Math.round(10 + ((i / totalPages) * 80));
+          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+
+          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
+          var batch = embeddedPages.slice(i, i + 4);
+
+          var sample = batch[0];
+          var sampleSize = sample.scale(1);
+          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
+
+          var scaledW = sampleSize.width * scale;
+          var scaledH = sampleSize.height * scale;
+
+          var totalGridW = (scaledW * 2) + gap;
+          var totalGridH = (scaledH * 2) + gap;
+
+          var startX = (SHEET_WIDTH - totalGridW) / 2;
+          var startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
+
+          var gridCoords = [
+            { x: startX,                   y: startY + scaledH + gap },
+            { x: startX + scaledW + gap,    y: startY + scaledH + gap },
+            { x: startX,                   y: startY },
+            { x: startX + scaledW + gap,    y: startY }
+          ];
+
+          batch.forEach(function(p, idx) {
+            var pos = gridCoords[idx];
+            sheet.drawPage(p, {
+              x: pos.x,
+              y: pos.y,
+              xScale: scale,
+              yScale: scale
+            });
+          });
+
+          var brandText = "DocuLoom";
+          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
+          sheet.drawText(brandText, {
+            x: (SHEET_WIDTH - textWidth) / 2,
+            y: 6,
+            size: 8.5,
+            font: font,
+            color: PDFLib.rgb(0.4, 0.4, 0.4)
+          });
         }
 
-      });
+        setProgress('nup', 'Saving 4-in-1 PDF...', 95);
+        var pdfBytes = await outDoc.save();
+        var blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        triggerDownload(blob, 'DocuLoom_4in1_' + file.name);
 
+        setProgress('nup', 'Done!', 100);
+        msg.className = 'status-msg success';
+        msg.innerText = '✅ Converted ' + totalPages + ' pages into ' + Math.ceil(totalPages / 4) + ' printable sheets!';
+      } catch (err) {
+        console.error(err);
+        msg.className = 'status-msg error';
+        msg.innerText = '❌ Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
     }
 
+    // --- 2. EXAM PHOTO / SIGNATURE RESIZER ENGINE ---
+    async function executeExamResize() {
+      var input = document.getElementById('exam-file');
+      var msg = document.getElementById('exam-msg');
+      var preset = document.getElementById('exam-preset').value;
 
-    searchInput.addEventListener(
-      "input",
-      filterTools
-    );
+      if (!input.files || input.files.length === 0) {
+        alert('Please select an image file first!');
+        return;
+      }
 
+      var file = input.files[0];
+      msg.className = 'status-msg';
+      msg.innerText = 'Processing image for exam requirements...';
 
-    function showComingSoon() {
+      var maxKB = 50;
+      var targetWidth = 413; // 3.5cm standard at 300 DPI
+      var targetHeight = 531; // 4.5cm standard
 
-      alert(
-        "DocuLoom AI Document Assistant is coming soon!"
-      );
+      if (preset === 'sign_20') {
+        maxKB = 20;
+        targetWidth = 413;
+        targetHeight = 177;
+      } else if (preset === 'photo_100') {
+        maxKB = 100;
+        targetWidth = 600;
+        targetHeight = 800;
+      } else if (preset === 'custom_200') {
+        maxKB = 200;
+        targetWidth = 800;
+        targetHeight = 1000;
+      }
 
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement('canvas');
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          var ctx = canvas.getContext('2d');
+
+          // Fill white background for signatures and photos
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, targetWidth, targetHeight);
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+          // Smart compression loop to guarantee file size is strictly under maxKB
+          var quality = 0.92;
+          function compress() {
+            canvas.toBlob(function(blob) {
+              if (blob.size / 1024 > maxKB && quality > 0.15) {
+                quality -= 0.08;
+                compress();
+              } else {
+                triggerDownload(blob, 'ExamReady_' + (preset.includes('sign') ? 'Sign' : 'Photo') + '.jpg');
+                msg.className = 'status-msg success';
+                msg.innerText = '✅ Ready! Output size: ' + (blob.size / 1024).toFixed(1) + ' KB (Compliant under ' + maxKB + ' KB)';
+              }
+            }, 'image/jpeg', quality);
+          }
+          compress();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
 
-  </script>
+    // --- 3. IMAGES TO PDF ENGINE ---
+    async function executeImagesToPdf() {
+      var input = document.getElementById('img-file');
+      var msg = document.getElementById('img-msg');
+      var btn = document.getElementById('img-btn');
 
-</body>
-</html>
+      if (!input.files || input.files.length === 0) {
+        alert('Please select JPG or PNG image files first!');
+        return;
+      }
+
+      var files = Array.from(input.files);
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.innerText = '';
+      setProgress('img', 'Processing images...', 10);
+
+      try {
+        var pdfDoc = await PDFLib.PDFDocument.crea
