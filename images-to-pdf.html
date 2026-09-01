@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JPG/PNG to PDF — PDF Toolkit</title>
+<meta name="description" content="Convert JPG or PNG images into a single PDF, entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>🖼️ JPG/PNG to PDF</h1>
+      <p>Turn one or more images into a single PDF. Processed locally in your browser.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-title">Drop JPG or PNG images here or click to choose</div>
+        <div class="dz-sub">You can select several images at once.</div>
+      </div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg" multiple hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="margin-top:0;">Page settings</h3>
+        <div class="inline-fields">
+          <div class="field">
+            <label for="page-size">Page size</label>
+            <select id="page-size">
+              <option value="fit">Fit to each image (no borders)</option>
+              <option value="a4">A4</option>
+              <option value="letter">US Letter</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="margin">Margin</label>
+            <select id="margin">
+              <option value="0">None</option>
+              <option value="20">Small</option>
+              <option value="40" selected>Medium</option>
+              <option value="70">Large</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" id="btn-add-more">＋ Add more images</button>
+      </div>
+
+      <p class="hint" style="color:var(--color-text-muted); font-size:0.85rem;">Drag images to reorder them — this is the order they'll appear in the PDF.</p>
+      <div id="file-list" class="file-list"></div>
+
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn btn-primary" id="btn-convert">⬇ Create PDF</button>
+      </div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> Conversion happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf-lib — open-source, runs locally.</div>
+</footer>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/images-to-pdf.js"></script>
+</body>
+</html>

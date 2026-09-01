@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit &amp; Sign PDF — PDF Toolkit</title>
+<meta name="description" content="Add text, draw, highlight, sign, crop and watermark PDF pages, entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>✍️ Edit &amp; Sign PDF</h1>
+      <p>Add text, drawings, highlights, your signature, watermarks, and crop pages. Processed locally in your browser.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop a PDF file here or click to choose</div>
+        <div class="dz-sub">One file at a time.</div>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="toolbar">
+        <span id="page-indicator" style="font-size:0.85rem; font-weight:700;"></span>
+        <div class="divider"></div>
+        <button class="btn btn-sm" id="btn-undo">↩ Undo last</button>
+        <button class="btn btn-sm btn-danger" id="btn-clear-page">Clear this page</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="btn-download">⬇ Download PDF</button>
+      </div>
+
+      <div class="editor-layout">
+
+        <div class="editor-sidebar" id="sidebar-thumbs"></div>
+
+        <div class="editor-canvas-area">
+          <div class="editor-canvas-stack" id="canvas-stack">
+            <canvas id="bg-canvas"></canvas>
+            <canvas id="overlay-canvas" class="overlay-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="editor-tools-panel">
+          <div class="tool-tab-grid">
+            <button class="tool-tab-btn active" data-tool="text"><span class="tt-icon">🔤</span>Text</button>
+            <button class="tool-tab-btn" data-tool="draw"><span class="tt-icon">✏️</span>Draw</button>
+            <button class="tool-tab-btn" data-tool="highlight"><span class="tt-icon">🖍️</span>Highlight</button>
+            <button class="tool-tab-btn" data-tool="sign"><span class="tt-icon">✒️</span>Sign</button>
+            <button class="tool-tab-btn" data-tool="crop"><span class="tt-icon">⬛</span>Crop</button>
+            <button class="tool-tab-btn" data-tool="watermark"><span class="tt-icon">💧</span>Watermark</button>
+          </div>
+
+          <div class="tool-options active" id="opt-text">
+            <div class="field">
+              <label for="text-size">Font size: <span id="text-size-val" class="range-value">16</span></label>
+              <input type="range" id="text-size" min="8" max="48" value="16">
+            </div>
+            <div class="field">
+              <label for="text-color">Color</label>
+              <input type="color" id="text-color" value="#111111">
+            </div>
+            <p class="hint">Click anywhere on the page, type your text, then press Enter or click outside to place it.</p>
+          </div>
+
+          <div class="tool-options" id="opt-draw">
+            <div class="field">
+              <label for="draw-width">Line width: <span id="draw-width-val" class="range-value">3</span></label>
+              <input type="range" id="draw-width" min="1" max="14" value="3">
+            </div>
+            <div class="field">
+              <label for="draw-color">Color</label>
+              <input type="color" id="draw-color" value="#e34141">
+            </div>
+            <p class="hint">Click and drag on the page to draw freehand.</p>
+          </div>
+
+          <div class="tool-options" id="opt-highlight">
+            <div class="field">
+              <label for="hl-color">Highlight color</label>
+              <input type="color" id="hl-color" value="#ffe93b">
+            </div>
+            <p class="hint">Click and drag to draw a highlight box over text.</p>
+          </div>
+
+          <div class="tool-options" id="opt-sign">
+            <button class="btn btn-primary" id="btn-open-signature" style="width:100%; margin-bottom:10px;">✒️ Draw your signature</button>
+            <div class="field">
+              <label for="sig-width">Signature width: <span id="sig-width-val" class="range-value">160</span>pt</label>
+              <input type="range" id="sig-width" min="60" max="360" value="160">
+            </div>
+            <p class="hint" id="sign-hint">Draw a signature above, then click on the page to place it. You can place it more than once.</p>
+          </div>
+
+          <div class="tool-options" id="opt-crop">
+            <p class="hint">Drag a box on the page to choose the area to keep, then click Apply.</p>
+            <button class="btn" id="btn-apply-crop" style="width:100%; margin-bottom:8px;">Apply crop to this page</button>
+            <button class="btn btn-danger" id="btn-remove-crop" style="width:100%;">Remove crop on this page</button>
+          </div>
+
+          <div class="tool-options" id="opt-watermark">
+            <div class="field">
+              <label for="wm-text">Watermark text</label>
+              <input type="text" id="wm-text" value="CONFIDENTIAL">
+            </div>
+            <div class="field">
+              <label for="wm-size">Font size: <span id="wm-size-val" class="range-value">48</span></label>
+              <input type="range" id="wm-size" min="12" max="120" value="48">
+            </div>
+            <div class="field">
+              <label for="wm-opacity">Opacity: <span id="wm-opacity-val" class="range-value">30%</span></label>
+              <input type="range" id="wm-opacity" min="5" max="100" value="30">
+            </div>
+            <div class="field">
+              <label for="wm-rotation">Rotation (°)</label>
+              <input type="number" id="wm-rotation" value="45" min="-90" max="90">
+            </div>
+            <div class="field">
+              <label for="wm-color">Color</label>
+              <input type="color" id="wm-color" value="#ff0000">
+            </div>
+            <div class="field">
+              <label><input type="checkbox" id="wm-all-pages" checked> Apply to all pages</label>
+            </div>
+            <button class="btn btn-primary" id="btn-apply-watermark" style="width:100%;">Add watermark</button>
+          </div>
+
+        </div>
+      </div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> All editing happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf-lib, pdf.js &amp; Signature Pad — open-source, runs locally.</div>
+</footer>
+
+<div class="modal-overlay" id="signature-modal">
+  <div class="modal">
+    <h3>Draw your signature</h3>
+    <canvas id="signature-pad-canvas"></canvas>
+    <div class="modal-actions">
+      <button class="btn" id="btn-sig-clear">Clear</button>
+      <button class="btn" id="btn-sig-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-sig-use">Use this signature</button>
+    </div>
+  </div>
+</div>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://unpkg.com/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/edit.js"></script>
+</body>
+</html>

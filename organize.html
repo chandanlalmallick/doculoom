@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merge &amp; Organize PDF — PDF Toolkit</title>
+<meta name="description" content="Merge PDFs, delete, reorder, duplicate, rotate pages, and insert blank or image pages — all in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>🗂️ Merge &amp; Organize PDF</h1>
+      <p>Combine PDFs, delete/reorder/duplicate/rotate pages, and insert blank or image pages. Files stay on your device.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop PDF files here or click to choose</div>
+        <div class="dz-sub">You can select more than one PDF — they'll be merged in the order you add them.</div>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" multiple hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="toolbar">
+        <button class="btn btn-sm" id="btn-add-more">＋ Add more PDFs</button>
+        <div class="divider"></div>
+        <button class="btn btn-sm" id="btn-select-all">Select all</button>
+        <button class="btn btn-sm" id="btn-select-none">Select none</button>
+        <div class="divider"></div>
+        <button class="btn btn-sm" id="btn-rotate-left" title="Rotate selected left">⟲ Rotate</button>
+        <button class="btn btn-sm" id="btn-rotate-right" title="Rotate selected right">⟳ Rotate</button>
+        <button class="btn btn-sm" id="btn-duplicate" title="Duplicate selected">⧉ Duplicate</button>
+        <button class="btn btn-sm btn-danger" id="btn-delete" title="Delete selected">🗑 Delete</button>
+        <div class="divider"></div>
+        <button class="btn btn-sm" id="btn-add-blank">＋ Blank page</button>
+        <button class="btn btn-sm" id="btn-add-image">＋ Image page</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="btn-download">⬇ Download merged PDF</button>
+      </div>
+
+      <p class="hint" style="color:var(--color-text-muted); font-size:0.85rem; margin-top:-8px;">
+        Tip: click a page to select it (for rotate/duplicate/delete). Drag any page to reorder it. New blank/image
+        pages are inserted right after your last selected page (or at the end) — then just drag them into place.
+      </p>
+
+      <div id="page-grid" class="page-grid"></div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> Merging, rotating, deleting and inserting pages happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf-lib &amp; pdf.js — open-source, runs locally.</div>
+</footer>
+
+<input type="file" id="image-page-input" accept="image/png,image/jpeg" hidden>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/organize.js"></script>
+</body>
+</html>

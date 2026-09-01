@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compress PDF — PDF Toolkit</title>
+<meta name="description" content="Shrink a PDF's file size, entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>📦 Compress PDF</h1>
+      <p>Shrink a PDF's file size for easier sharing. Processed locally in your browser.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop a PDF file here or click to choose</div>
+        <div class="dz-sub">One file at a time.</div>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="panel">
+        <div class="field">
+          <label>Original file size: <strong id="original-size"></strong> (<span id="original-name"></span>)</label>
+        </div>
+
+        <hr class="sep">
+
+        <div class="field">
+          <label>Compression mode</label>
+          <div class="radio-row" style="flex-direction:column; align-items:flex-start; gap:10px;">
+            <label><input type="radio" name="mode" value="light" checked> <strong>Light</strong> — cleans up the file structure. Keeps text selectable and images at full quality. Savings are modest.</label>
+            <label><input type="radio" name="mode" value="strong"> <strong>Strong</strong> — converts each page into a compressed image. Much smaller files, but text is no longer selectable/searchable and very fine text may look slightly softer.</label>
+          </div>
+        </div>
+
+        <div id="strong-options" style="display:none;">
+          <div class="inline-fields">
+            <div class="field">
+              <label for="strong-dpi">Resolution</label>
+              <select id="strong-dpi">
+                <option value="1.0">Low (smallest file)</option>
+                <option value="1.5" selected>Medium (recommended)</option>
+                <option value="2.0">High</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="strong-quality">Image quality: <span id="quality-value" class="range-value">70%</span></label>
+              <input type="range" id="strong-quality" min="20" max="95" value="70">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-compress">Compress PDF</button>
+      </div>
+
+      <div id="result-panel" class="panel" style="display:none; margin-top:18px;">
+        <h3 style="margin-top:0;">Result</h3>
+        <p>New size: <strong id="new-size"></strong> — <span id="savings"></span></p>
+        <button class="btn btn-primary" id="btn-download">⬇ Download compressed PDF</button>
+      </div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> Compression happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf-lib &amp; pdf.js — open-source, runs locally.</div>
+</footer>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/compress.js"></script>
+</body>
+</html>

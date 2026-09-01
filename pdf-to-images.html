@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF to JPG/PNG — PDF Toolkit</title>
+<meta name="description" content="Export PDF pages as JPG or PNG images, entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>📸 PDF to JPG/PNG</h1>
+      <p>Export PDF pages as image files. Processed locally in your browser.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop a PDF file here or click to choose</div>
+        <div class="dz-sub">One file at a time.</div>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="margin-top:0;">Export settings</h3>
+        <div class="inline-fields">
+          <div class="field">
+            <label for="img-format">Format</label>
+            <select id="img-format">
+              <option value="image/png">PNG (lossless)</option>
+              <option value="image/jpeg">JPG (smaller files)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="img-quality">JPG quality: <span id="quality-value" class="range-value">85%</span></label>
+            <input type="range" id="img-quality" min="10" max="100" value="85">
+          </div>
+          <div class="field">
+            <label for="img-scale">Resolution</label>
+            <select id="img-scale">
+              <option value="1">1× (screen)</option>
+              <option value="2" selected>2× (recommended)</option>
+              <option value="3">3× (high quality)</option>
+              <option value="4">4× (print quality)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-sm" id="btn-select-all">Select all</button>
+        <button class="btn btn-sm" id="btn-select-none">Select none</button>
+        <div class="spacer"></div>
+        <span id="selection-count" style="font-size:0.85rem; color:var(--color-text-muted);"></span>
+      </div>
+
+      <div id="page-grid" class="page-grid"></div>
+
+      <div class="btn-row" style="margin-top:18px;">
+        <button class="btn btn-primary" id="btn-export">⬇ Download selected pages as images</button>
+      </div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> Rendering happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf.js &amp; JSZip — open-source, runs locally.</div>
+</footer>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/pdf-to-images.js"></script>
+</body>
+</html>

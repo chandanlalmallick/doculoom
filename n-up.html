@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiple pages per sheet — PDF Toolkit</title>
+<meta name="description" content="Combine 2, 4, 6, 9 or more PDF pages onto a single sheet, entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="nav-links">
+      <a href="organize.html">Organize</a>
+      <a href="split.html">Split</a>
+      <a href="images-to-pdf.html">Images → PDF</a>
+      <a href="pdf-to-images.html">PDF → Images</a>
+      <a href="n-up.html">Multi-page layout</a>
+      <a href="edit.html">Edit &amp; Sign</a>
+      <a href="compress.html">Compress</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="container">
+
+    <div class="tool-header">
+      <h1>🔳 Multiple pages per sheet</h1>
+      <p>Print-friendly layouts: fit 2, 4, 6, 9 or more pages onto a single sheet. Processed locally.</p>
+    </div>
+
+    <div id="upload-panel" class="panel">
+      <div id="dropzone" class="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-title">Drop a PDF file here or click to choose</div>
+        <div class="dz-sub">One file at a time.</div>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" hidden>
+      <div id="upload-status" class="status-msg"></div>
+    </div>
+
+    <div id="editor-panel" style="display:none;">
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3 style="margin-top:0;">Layout settings</h3>
+        <div class="inline-fields">
+          <div class="field">
+            <label for="pages-per-sheet">Pages per sheet</label>
+            <select id="pages-per-sheet">
+              <option value="2">2</option>
+              <option value="4" selected>4</option>
+              <option value="6">6</option>
+              <option value="9">9</option>
+              <option value="12">12</option>
+              <option value="16">16</option>
+              <option value="custom">Custom grid…</option>
+            </select>
+          </div>
+          <div class="field" id="custom-grid-fields" style="display:none;">
+            <label>Custom grid (columns × rows)</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="custom-cols" min="1" max="8" value="2" style="width:70px;">
+              <span>×</span>
+              <input type="number" id="custom-rows" min="1" max="8" value="2" style="width:70px;">
+            </div>
+          </div>
+          <div class="field">
+            <label for="sheet-size">Output sheet size</label>
+            <select id="sheet-size">
+              <option value="a4">A4</option>
+              <option value="letter">US Letter</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="orientation">Orientation</label>
+            <select id="orientation">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="max-width:260px;">
+          <label for="gap">Gap between pages</label>
+          <select id="gap">
+            <option value="0">None</option>
+            <option value="6" selected>Small</option>
+            <option value="14">Medium</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-generate">⬇ Generate PDF</button>
+        <span id="page-summary" style="font-size:0.85rem; color:var(--color-text-muted);"></span>
+      </div>
+
+      <div id="editor-status" class="status-msg"></div>
+    </div>
+
+    <div class="privacy-note">
+      <div>🔒</div>
+      <div><strong>Nothing is uploaded.</strong> Layout generation happens entirely inside your browser tab.</div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">Built with pdf-lib — open-source, runs locally.</div>
+</footer>
+
+<div class="progress-overlay" id="progress-overlay">
+  <div class="big-spinner"></div>
+  <div class="progress-text">Working…</div>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/n-up.js"></script>
+</body>
+</html>
