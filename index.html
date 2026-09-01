@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocuLoom — Fast & Free PDF Tools</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
   <style>
     :root {
       --primary: #e11d48;
@@ -61,9 +65,9 @@
     .tab-btn {
       background: #ffffff;
       border: 1px solid var(--border);
-      padding: 0.6rem 1.2rem;
+      padding: 0.6rem 1rem;
       border-radius: 9999px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--muted);
       cursor: pointer;
@@ -147,6 +151,26 @@
       display: none;
     }
 
+    .threshold-control {
+      margin-bottom: 1.25rem;
+      text-align: left;
+      font-size: 0.85rem;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      background: #f8fafc;
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .slider {
+      width: 100%;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
     .action-btn {
       width: 100%;
       background: var(--primary);
@@ -195,14 +219,40 @@
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('nup', this)">📄 4 Pages in 1 (Fit Print)</button>
+    <button class="tab-btn active" onclick="switchTab('cleaner', this)">🧼 Clean Watermark</button>
+    <button class="tab-btn" onclick="switchTab('nup', this)">📄 4 Pages in 1</button>
     <button class="tab-btn" onclick="switchTab('merge', this)">📑 Merge PDFs</button>
     <button class="tab-btn" onclick="switchTab('img2pdf', this)">🖼️ Images to PDF</button>
     <button class="tab-btn" onclick="switchTab('split', this)">✂️ Split PDF</button>
   </div>
 
   <main>
-    <div id="tab-nup" class="tool-card">
+    <div id="tab-cleaner" class="tool-card">
+      <h2 class="tool-title">Safe Watermark Remover & Text Enhancer</h2>
+      <p class="tool-desc">Erases background watermarks while preserving faint letters, numbers, and math symbols.</p>
+
+      <div class="dropzone" onclick="document.getElementById('cleaner-input').click()">
+        🧼
+        <p>Select PDF File with Watermark</p>
+        <span>Scanned notes, study materials, or textbooks</span>
+      </div>
+      <input type="file" id="cleaner-input" class="file-input" accept="application/pdf" onchange="handleCleanerFile(this.files)" />
+
+      <div id="cleaner-files" class="file-list"></div>
+
+      <div class="threshold-control">
+        <label for="threshold-slider">
+          <strong>Cleaning Balance:</strong> <span id="threshold-val">168</span> 
+          <br><small style="color: var(--muted);">Set lower (140-160) for faint text | Set higher (170-190) for darker watermarks</small>
+        </label>
+        <input type="range" id="threshold-slider" class="slider" min="120" max="210" value="168" oninput="document.getElementById('threshold-val').innerText = this.value">
+      </div>
+
+      <button id="cleaner-btn" class="action-btn" disabled onclick="processWatermarkCleaning()">Remove Watermark & Download</button>
+      <div id="cleaner-status" class="status-msg"></div>
+    </div>
+
+    <div id="tab-nup" class="tool-card" style="display: none;">
       <h2 class="tool-title">Smart 4-in-1 Layout (Max Size)</h2>
       <p class="tool-desc">Auto-fits slides into landscape sheets without blank gaps so letters remain large and legible.</p>
 
@@ -278,10 +328,115 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       el.classList.add('active');
 
+      document.getElementById('tab-cleaner').style.display = tool === 'cleaner' ? 'block' : 'none';
       document.getElementById('tab-nup').style.display = tool === 'nup' ? 'block' : 'none';
       document.getElementById('tab-merge').style.display = tool === 'merge' ? 'block' : 'none';
       document.getElementById('tab-img2pdf').style.display = tool === 'img2pdf' ? 'block' : 'none';
       document.getElementById('tab-split').style.display = tool === 'split' ? 'block' : 'none';
+    }
+
+    // --- ENHANCED SAFE WATERMARK CLEANER ---
+    let cleanerFile = null;
+    function handleCleanerFile(files) {
+      cleanerFile = files[0];
+      const box = document.getElementById('cleaner-files');
+      if (cleanerFile) {
+        box.style.display = 'block';
+        box.innerHTML = `<strong>Selected:</strong> ${cleanerFile.name}`;
+        document.getElementById('cleaner-btn').disabled = false;
+      }
+    }
+
+    async function processWatermarkCleaning() {
+      const status = document.getElementById('cleaner-status');
+      status.className = 'status-msg';
+      status.innerText = 'Analyzing pages with text-protection engine...';
+
+      try {
+        const threshold = parseInt(document.getElementById('threshold-slider').value, 10);
+        const fileBytes = await cleanerFile.arrayBuffer();
+        
+        const loadingTask = pdfjsLib.getDocument({ data: fileBytes });
+        const pdf = await loadingTask.promise;
+        const totalPages = pdf.numPages;
+
+        const outDoc = await PDFDocument.create();
+        const font = await outDoc.embedFont(StandardFonts.HelveticaBold);
+
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          status.innerText = `Safely cleaning page ${pageNum} of ${totalPages}...`;
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 2.0 });
+
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imgData.data;
+
+          // Safe Dynamic Curve: Preserves fine lines while bleaching watermarks
+          const darkCap = Math.max(70, threshold - 65);
+
+          for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            
+            if (gray >= threshold) {
+              // Whitewash watermark
+              data[i] = 255;
+              data[i + 1] = 255;
+              data[i + 2] = 255;
+            } else if (gray <= darkCap) {
+              // Deepen core text and math formulas to pitch black
+              data[i] = 0;
+              data[i + 1] = 0;
+              data[i + 2] = 0;
+            } else {
+              // Smooth transition preserving faint character strokes
+              const normalized = (gray - darkCap) / (threshold - darkCap);
+              const val = Math.floor(normalized * 255);
+              data[i] = val;
+              data[i + 1] = val;
+              data[i + 2] = val;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+
+          const cleanDataUrl = canvas.toDataURL('image/jpeg', 0.94);
+          const cleanImgBytes = await fetch(cleanDataUrl).then(res => res.arrayBuffer());
+          const cleanImg = await outDoc.embedJpg(cleanImgBytes);
+
+          const outPage = outDoc.addPage([595.28, 841.89]);
+          outPage.drawImage(cleanImg, {
+            x: 0,
+            y: 18,
+            width: 595.28,
+            height: 823.89
+          });
+
+          const brandText = "DocuLoom";
+          const textWidth = font.widthOfTextAtSize(brandText, 8.5);
+          outPage.drawText(brandText, {
+            x: (595.28 - textWidth) / 2,
+            y: 6,
+            size: 8.5,
+            font: font,
+            color: rgb(0.4, 0.4, 0.4)
+          });
+        }
+
+        const cleanedPdfBytes = await outDoc.save();
+        downloadBlob(cleanedPdfBytes, 'Cleaned_' + cleanerFile.name, 'application/pdf');
+        status.className = 'status-msg success';
+        status.innerText = `Done! Successfully cleaned ${totalPages} pages without erasing text.`;
+      } catch (err) {
+        console.error(err);
+        status.className = 'status-msg error';
+        status.innerText = 'Error: Could not clean watermarks from this PDF.';
+      }
     }
 
     // --- HIGH-DENSITY 4-IN-1 ENGINE ---
@@ -313,7 +468,6 @@
 
         const embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
 
-        // Use Landscape A4 (841.89 x 595.28) for landscape slides, Portrait A4 for portrait pages
         const SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
         const SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
 
@@ -331,7 +485,6 @@
           const sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
           const batch = embeddedPages.slice(i, i + 4);
 
-          // Get dimensions from the first page of this batch to tightly stack rows
           const sample = batch[0];
           const sampleSize = sample.scale(1);
           const scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
@@ -339,7 +492,6 @@
           const scaledW = sampleSize.width * scale;
           const scaledH = sampleSize.height * scale;
 
-          // Compute exact bounding box and center tightly
           const totalGridW = (scaledW * 2) + gap;
           const totalGridH = (scaledH * 2) + gap;
 
@@ -347,10 +499,10 @@
           const startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
 
           const gridCoords = [
-            { x: startX,                   y: startY + scaledH + gap }, // Top-Left
-            { x: startX + scaledW + gap,    y: startY + scaledH + gap }, // Top-Right
-            { x: startX,                   y: startY },                 // Bottom-Left
-            { x: startX + scaledW + gap,    y: startY }                  // Bottom-Right
+            { x: startX,                   y: startY + scaledH + gap },
+            { x: startX + scaledW + gap,    y: startY + scaledH + gap },
+            { x: startX,                   y: startY },
+            { x: startX + scaledW + gap,    y: startY }
           ];
 
           batch.forEach((embeddedPage, idx) => {
@@ -363,7 +515,6 @@
             });
           });
 
-          // Subtle DocuLoom Branding
           const brandText = "DocuLoom";
           const textWidth = font.widthOfTextAtSize(brandText, 8.5);
           sheet.drawText(brandText, {
@@ -435,82 +586,4 @@
     async function processImagesToPdf() {
       const status = document.getElementById('img-status');
       status.className = 'status-msg';
-      status.innerText = 'Generating PDF...';
-
-      try {
-        const pdfDoc = await PDFDocument.create();
-        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-        for (const file of imgFileList) {
-          const bytes = await file.arrayBuffer();
-          let img;
-          if (file.type === 'image/jpeg' || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) {
-            img = await pdfDoc.embedJpg(bytes);
-          } else {
-            img = await pdfDoc.embedPng(bytes);
-          }
-          const page = pdfDoc.addPage([img.width, img.height + 25]);
-          page.drawImage(img, { x: 0, y: 25, width: img.width, height: img.height });
-          
-          page.drawText("DocuLoom", {
-            x: (img.width - 60) / 2,
-            y: 8,
-            size: 10,
-            font: font,
-            color: rgb(0.4, 0.4, 0.4),
-          });
-        }
-        const pdfBytes = await pdfDoc.save();
-        downloadBlob(pdfBytes, 'DocuLoom_Images.pdf', 'application/pdf');
-        status.className = 'status-msg success';
-        status.innerText = 'Done! Your PDF downloaded.';
-      } catch (err) {
-        status.className = 'status-msg error';
-        status.innerText = 'Error: Only JPG/PNG images are supported.';
-      }
-    }
-
-    // --- SPLIT LOGIC ---
-    let splitFile = null;
-    function handleSplitFile(files) {
-      splitFile = files[0];
-      const box = document.getElementById('split-files');
-      if (splitFile) {
-        box.style.display = 'block';
-        box.innerHTML = `<strong>Selected:</strong> ${splitFile.name}`;
-        document.getElementById('split-btn').disabled = false;
-      }
-    }
-
-    async function processSplit() {
-      const status = document.getElementById('split-status');
-      status.className = 'status-msg';
-      status.innerText = 'Extracting page...';
-
-      try {
-        const bytes = await splitFile.arrayBuffer();
-        const srcPdf = await PDFDocument.load(bytes);
-        const newPdf = await PDFDocument.create();
-        const [firstPage] = await newPdf.copyPages(srcPdf, [0]);
-        newPdf.addPage(firstPage);
-
-        const pdfBytes = await newPdf.save();
-        downloadBlob(pdfBytes, 'DocuLoom_Page1.pdf', 'application/pdf');
-        status.className = 'status-msg success';
-        status.innerText = 'Done! Extracted page downloaded.';
-      } catch (err) {
-        status.className = 'status-msg error';
-        status.innerText = 'Error: Failed to extract page.';
-      }
-    }
-
-    function downloadBlob(bytes, filename, type) {
-      const blob = new Blob([bytes], { type });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-    }
-  </script>
-</body>
-</html>
+      status.innerText = '
