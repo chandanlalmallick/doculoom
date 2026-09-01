@@ -1,20 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DocuLoom — Clean & Convert PDF Tools</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js"></script>
-  <script>
-    // Configure pdf.js worker using exact matching legacy version for universal mobile support
-    if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
-    }
-  </script>
-
-  <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e11d48">  <title>DocuLoom — Free PDF Tools</title>  <style>
     :root {
       --primary: #e11d48;
       --primary-hover: #be123c;
@@ -23,18 +11,21 @@
       --text: #0f172a;
       --muted: #64748b;
       --border: #e2e8f0;
-      --radius: 12px;
+      --success: #059669;
+      --danger: #dc2626;
+      --radius: 14px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Arial, sans-serif;
     }
 
     body {
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -42,14 +33,17 @@
     }
 
     header {
-      background: #ffffff;
+      background: #fff;
       border-bottom: 1px solid var(--border);
-      padding: 1.25rem 1rem;
+      padding: 18px 12px;
       text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
 
     .brand {
-      font-size: 1.5rem;
+      font-size: 1.45rem;
       font-weight: 800;
       color: var(--primary);
       text-decoration: none;
@@ -59,38 +53,53 @@
       color: var(--text);
     }
 
-    /* Tab Switcher */
+    /* Tabs */
+
+    input.tab-radio {
+      display: none;
+    }
+
     .nav-tabs {
       display: flex;
       justify-content: center;
-      gap: 0.5rem;
-      margin: 1.5rem 0.75rem 0;
+      gap: 8px;
+      padding: 14px 10px 4px;
       flex-wrap: wrap;
     }
 
-    .tab-btn {
-      background: #ffffff;
+    .tab-label {
+      background: #fff;
       border: 1px solid var(--border);
-      padding: 0.65rem 1.1rem;
-      border-radius: 9999px;
-      font-size: 0.9rem;
-      font-weight: 700;
+      padding: 9px 13px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 650;
       color: var(--muted);
       cursor: pointer;
-      transition: all 0.2s;
+      user-select: none;
+      transition: 0.15s ease;
     }
 
-    .tab-btn.active {
+    .tab-label:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    #r-cleaner:checked ~ .nav-tabs label[for="r-cleaner"],
+    #r-nup:checked ~ .nav-tabs label[for="r-nup"],
+    #r-merge:checked ~ .nav-tabs label[for="r-merge"],
+    #r-img:checked ~ .nav-tabs label[for="r-img"],
+    #r-split:checked ~ .nav-tabs label[for="r-split"] {
       background: var(--primary);
-      color: #ffffff;
+      color: #fff;
       border-color: var(--primary);
     }
 
     main {
-      max-width: 550px;
       width: 100%;
-      margin: 1.25rem auto;
-      padding: 0 1rem;
+      max-width: 680px;
+      margin: 16px auto;
+      padding: 0 12px;
       flex: 1;
     }
 
@@ -99,366 +108,872 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.75rem 1.25rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 22px 18px;
+      box-shadow: 0 5px 15px rgba(15, 23, 42, 0.05);
       text-align: center;
     }
 
-    .tool-panel.active {
+    #r-cleaner:checked ~ main #panel-cleaner,
+    #r-nup:checked ~ main #panel-nup,
+    #r-merge:checked ~ main #panel-merge,
+    #r-img:checked ~ main #panel-img,
+    #r-split:checked ~ main #panel-split {
       display: block;
     }
 
     .tool-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
+      font-size: 1.28rem;
+      font-weight: 750;
+      margin-bottom: 5px;
     }
 
     .tool-desc {
-      font-size: 0.88rem;
       color: var(--muted);
-      margin-bottom: 1.5rem;
-      line-height: 1.4;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      margin-bottom: 18px;
     }
 
     .upload-box {
       background: #f1f5f9;
       border: 2px dashed #cbd5e1;
       border-radius: var(--radius);
-      padding: 1.5rem 1rem;
-      margin-bottom: 1.25rem;
+      padding: 17px 14px;
+      margin-bottom: 16px;
       text-align: left;
     }
 
     .upload-box label {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1e293b;
       display: block;
-      margin-bottom: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 9px;
     }
 
     input[type="file"] {
       display: block;
       width: 100%;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--muted);
-      padding: 0.6rem;
-      background: #ffffff;
+      padding: 8px;
+      background: #fff;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: 9px;
     }
 
-    .file-details {
-      font-size: 0.85rem;
-      color: #0f172a;
-      margin-top: 0.75rem;
-      padding: 0.6rem;
-      background: #ffffff;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      display: none;
-      word-break: break-all;
+    .file-info {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-word;
     }
 
     .threshold-box {
-      margin-bottom: 1.25rem;
-      text-align: left;
       background: #f8fafc;
-      padding: 0.85rem;
-      border-radius: 8px;
+      padding: 13px;
+      border-radius: 10px;
       border: 1px solid var(--border);
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .threshold-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    #slider-val {
+      color: var(--primary);
     }
 
     .slider {
       width: 100%;
-      height: 6px;
+      height: 7px;
       accent-color: var(--primary);
-      margin: 0.5rem 0;
+      margin: 9px 0;
     }
 
     .guide-table {
       width: 100%;
-      font-size: 0.75rem;
-      margin-top: 0.4rem;
       border-collapse: collapse;
+      font-size: 0.75rem;
     }
 
     .guide-table td {
-      padding: 2px 0;
+      padding: 3px 0;
       color: var(--muted);
     }
 
     .action-btn {
       width: 100%;
       background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 700;
+      color: #fff;
+      border: 0;
+      padding: 13px;
+      font-size: 0.98rem;
+      font-weight: 750;
       border-radius: var(--radius);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    .action-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .action-btn:active {
+      transform: scale(0.99);
     }
 
     .action-btn:disabled {
-      background: #cbd5e1;
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
     .progress-box {
       display: none;
-      margin-top: 1.25rem;
+      margin-top: 18px;
       text-align: left;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 650;
     }
 
     .progress-bar-bg {
       width: 100%;
       height: 10px;
       background: #e2e8f0;
-      border-radius: 9999px;
+      border-radius: 999px;
       overflow: hidden;
-      margin-top: 0.4rem;
+      margin-top: 7px;
     }
 
     .progress-bar-fill {
       width: 0%;
       height: 100%;
       background: var(--primary);
-      transition: width 0.15s ease;
+      transition: width 0.15s linear;
     }
 
     .status-msg {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      font-weight: 600;
+      min-height: 22px;
+      margin-top: 13px;
+      font-size: 0.86rem;
+      font-weight: 650;
+      line-height: 1.4;
     }
 
-    .status-msg.success { color: #059669; }
-    .status-msg.error { color: #dc2626; }
+    .status-msg.success {
+      color: var(--success);
+    }
+
+    .status-msg.error {
+      color: var(--danger);
+    }
+
+    .status-msg.info {
+      color: var(--muted);
+    }
 
     footer {
       text-align: center;
-      padding: 1.5rem;
-      font-size: 0.85rem;
+      padding: 20px 12px;
+      font-size: 0.78rem;
       color: var(--muted);
       border-top: 1px solid var(--border);
-      background: #ffffff;
-      margin-top: auto;
+      background: #fff;
+      margin-top: 20px;
     }
-  </style>
-</head>
-<body>
 
-  <header>
-    <a href="index.html" class="brand">Docu<span>Loom</span></a>
-  </header>
+    .privacy-note {
+      margin-top: 9px;
+      font-size: 0.72rem;
+    }
 
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('cleaner', this)">🧼 Clean Watermark</button>
-    <button class="tab-btn" onclick="switchTab('nup', this)">📄 4 Pages in 1</button>
-    <button class="tab-btn" onclick="switchTab('img2pdf', this)">🖼️ Images to PDF</button>
+    @media (max-width: 520px) {
+      .nav-tabs {
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+
+      .nav-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab-label {
+        flex: 0 0 auto;
+      }
+
+      .tool-panel {
+        padding: 19px 14px;
+      }
+    }
+  </style></head><body><header>
+  <a href="index.html" class="brand">Docu<span>Loom</span></a>
+</header><input type="radio" name="tab" id="r-cleaner" class="tab-radio" checked>
+<input type="radio" name="tab" id="r-nup" class="tab-radio">
+<input type="radio" name="tab" id="r-merge" class="tab-radio">
+<input type="radio" name="tab" id="r-img" class="tab-radio">
+<input type="radio" name="tab" id="r-split" class="tab-radio"><nav class="nav-tabs">
+  <label for="r-cleaner" class="tab-label">🧼 Clean Watermark</label>
+  <label for="r-nup" class="tab-label">📄 4 Pages in 1</label>
+  <label for="r-merge" class="tab-label">📑 Merge</label>
+  <label for="r-img" class="tab-label">🖼️ Images to PDF</label>
+  <label for="r-split" class="tab-label">✂️ Split</label>
+</nav><main>  <!-- CLEANER -->  <section id="panel-cleaner" class="tool-panel"><h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
+
+<p class="tool-desc">
+  Converts PDF pages into clean, high-contrast pages for easier reading and printing.
+</p>
+
+<div class="upload-box">
+  <label for="cleaner-file">Select PDF File:</label>
+  <input type="file" id="cleaner-file" accept="application/pdf">
+  <div id="cleaner-file-info" class="file-info"></div>
+</div>
+
+<div class="threshold-box">
+
+  <div class="threshold-head">
+    <span>Cleaning Threshold</span>
+    <span id="slider-val">168</span>
   </div>
 
-  <main>
-    <div id="panel-cleaner" class="tool-panel active">
-      <h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
-      <p class="tool-desc">Erases background watermarks/stamps and darkens text for clear printing.</p>
+  <input
+    type="range"
+    id="cleaner-slider"
+    class="slider"
+    min="130"
+    max="210"
+    value="168"
+  >
 
-      <div class="upload-box">
-        <label for="cleaner-file">Choose PDF File:</label>
-        <input type="file" id="cleaner-file" accept="application/pdf" onchange="onFileSelected(this, 'cleaner-info')" />
-        <div id="cleaner-info" class="file-details"></div>
-      </div>
+  <table class="guide-table">
+    <tr>
+      <td><strong>130–155:</strong></td>
+      <td>Faint handwriting / light symbols</td>
+    </tr>
+    <tr>
+      <td><strong>160–175:</strong></td>
+      <td>Standard gray stamps</td>
+    </tr>
+    <tr>
+      <td><strong>180–210:</strong></td>
+      <td>Darker gray backgrounds</td>
+    </tr>
+  </table>
 
-      <div class="threshold-box">
-        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem;">
-          <span>Cleaning Threshold</span>
-          <span id="slider-val" style="color:var(--primary);">168</span>
-        </div>
-        <input type="range" id="cleaner-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('slider-val').innerText = this.value">
-        <table class="guide-table">
-          <tr><td><strong>130–155:</strong></td><td>Faint handwriting / light math symbols</td></tr>
-          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Recommended)</td></tr>
-          <tr><td><strong>180–210:</strong></td><td>Dark gray watermarks</td></tr>
-        </table>
-      </div>
+</div>
 
-      <button id="cleaner-btn" class="action-btn" onclick="executeCleanWatermark()">Remove Watermark & Download</button>
+<button id="cleaner-btn" class="action-btn">
+  Remove Watermark & Download
+</button>
 
-      <div id="cleaner-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-          <span id="cleaner-prog-text">Processing...</span>
-          <span id="cleaner-prog-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg"><div id="cleaner-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="cleaner-msg" class="status-msg"></div>
-    </div>
+<div id="cleaner-progress" class="progress-box">
+  <div class="progress-head">
+    <span id="cleaner-prog-text">Starting...</span>
+    <span id="cleaner-prog-pct">0%</span>
+  </div>
 
-    <div id="panel-nup" class="tool-panel">
-      <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
-      <p class="tool-desc">Combines 4 slides onto 1 sheet to save paper with large legible text.</p>
+  <div class="progress-bar-bg">
+    <div id="cleaner-prog-fill" class="progress-bar-fill"></div>
+  </div>
+</div>
 
-      <div class="upload-box">
-        <label for="nup-file">Choose PDF File:</label>
-        <input type="file" id="nup-file" accept="application/pdf" onchange="onFileSelected(this, 'nup-info')" />
-        <div id="nup-info" class="file-details"></div>
-      </div>
+<div id="cleaner-msg" class="status-msg"></div>
 
-      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
+  </section>  <!-- 4 IN 1 -->  <section id="panel-nup" class="tool-panel"><h2 class="tool-title">4 Pages in 1 Sheet</h2>
 
-      <div id="nup-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-          <span id="nup-prog-text">Converting...</span>
-          <span id="nup-prog-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg"><div id="nup-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="nup-msg" class="status-msg"></div>
-    </div>
+<p class="tool-desc">
+  Fits four PDF pages onto one printable sheet.
+</p>
 
-    <div id="panel-img2pdf" class="tool-panel">
-      <h2 class="tool-title">Convert Images to PDF</h2>
-      <p class="tool-desc">Combine multiple JPG and PNG pictures into a single document.</p>
+<div class="upload-box">
+  <label for="nup-file">Select PDF File:</label>
+  <input type="file" id="nup-file" accept="application/pdf">
+  <div id="nup-file-info" class="file-info"></div>
+</div>
 
-      <div class="upload-box">
-        <label for="img-file">Select Image(s):</label>
-        <input type="file" id="img-file" multiple accept="image/jpeg, image/png" onchange="onFileSelected(this, 'img-info')" />
-        <div id="img-info" class="file-details"></div>
-      </div>
+<button id="nup-btn" class="action-btn">
+  Convert to 4-in-1 & Download
+</button>
 
-      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert & Download</button>
+<div id="nup-progress" class="progress-box">
+  <div class="progress-head">
+    <span id="nup-prog-text">Starting...</span>
+    <span id="nup-prog-pct">0%</span>
+  </div>
 
-      <div id="img-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
-          <span id="img-prog-text">Converting...</span>
-          <span id="img-prog-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg"><div id="img-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="img-msg" class="status-msg"></div>
-    </div>
-  </main>
+  <div class="progress-bar-bg">
+    <div id="nup-prog-fill" class="progress-bar-fill"></div>
+  </div>
+</div>
 
-  <footer>
-    DocuLoom — 100% Free & Client-Side.
-  </footer>
+<div id="nup-msg" class="status-msg"></div>
 
-  <script>
-    // Tab Switcher
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tool-panel').forEach(function(p) { p.classList.remove('active'); });
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  </section>  <!-- MERGE -->  <section id="panel-merge" class="tool-panel"><h2 class="tool-title">Merge PDF Files</h2>
 
-      document.getElementById('panel-' + tabId).classList.add('active');
-      btn.classList.add('active');
-    }
+<p class="tool-desc">
+  Combine multiple PDF files into one PDF.
+</p>
 
-    // Display File Details
-    function onFileSelected(input, infoId) {
-      var info = document.getElementById(infoId);
-      if (input.files && input.files.length > 0) {
-        info.style.display = 'block';
-        if (input.files.length === 1) {
-          info.innerHTML = '<strong>Selected:</strong> ' + input.files[0].name;
-        } else {
-          info.innerHTML = '<strong>Selected ' + input.files.length + ' image(s)</strong>';
-        }
+<div class="upload-box">
+  <label for="merge-file">Select Multiple PDFs:</label>
+  <input
+    type="file"
+    id="merge-file"
+    multiple
+    accept="application/pdf"
+  >
+  <div id="merge-file-info" class="file-info"></div>
+</div>
+
+<button id="merge-btn" class="action-btn">
+  Merge & Download
+</button>
+
+<div id="merge-progress" class="progress-box">
+  <div class="progress-head">
+    <span id="merge-prog-text">Starting...</span>
+    <span id="merge-prog-pct">0%</span>
+  </div>
+
+  <div class="progress-bar-bg">
+    <div id="merge-prog-fill" class="progress-bar-fill"></div>
+  </div>
+</div>
+
+<div id="merge-msg" class="status-msg"></div>
+
+  </section>  <!-- IMAGES -->  <section id="panel-img" class="tool-panel"><h2 class="tool-title">Images to PDF</h2>
+
+<p class="tool-desc">
+  Convert JPG and PNG images into one PDF document.
+</p>
+
+<div class="upload-box">
+  <label for="img-file">Select Images:</label>
+
+  <input
+    type="file"
+    id="img-file"
+    multiple
+    accept="image/jpeg,image/png"
+  >
+
+  <div id="img-file-info" class="file-info"></div>
+</div>
+
+<button id="img-btn" class="action-btn">
+  Convert & Download
+</button>
+
+<div id="img-progress" class="progress-box">
+  <div class="progress-head">
+    <span id="img-prog-text">Starting...</span>
+    <span id="img-prog-pct">0%</span>
+  </div>
+
+  <div class="progress-bar-bg">
+    <div id="img-prog-fill" class="progress-bar-fill"></div>
+  </div>
+</div>
+
+<div id="img-msg" class="status-msg"></div>
+
+  </section>  <!-- SPLIT -->  <section id="panel-split" class="tool-panel"><h2 class="tool-title">Split First Page</h2>
+
+<p class="tool-desc">
+  Extract the first page from a PDF.
+</p>
+
+<div class="upload-box">
+  <label for="split-file">Select PDF File:</label>
+
+  <input
+    type="file"
+    id="split-file"
+    accept="application/pdf"
+  >
+
+  <div id="split-file-info" class="file-info"></div>
+</div>
+
+<button id="split-btn" class="action-btn">
+  Extract Page 1 & Download
+</button>
+
+<div id="split-progress" class="progress-box">
+  <div class="progress-head">
+    <span id="split-prog-text">Starting...</span>
+    <span id="split-prog-pct">0%</span>
+  </div>
+
+  <div class="progress-bar-bg">
+    <div id="split-prog-fill" class="progress-bar-fill"></div>
+  </div>
+</div>
+
+<div id="split-msg" class="status-msg"></div>
+
+  </section></main><footer>  <div>DocuLoom — 100% Free & Client-Side.</div>  <div class="privacy-note">
+    🔒 Your files are processed in your browser and are not uploaded to a server.
+  </div></footer><script>
+
+/* =========================================================
+   DOCULOOM PDF TOOLS
+   ========================================================= */
+
+"use strict";
+
+
+/* ---------------------------------------------------------
+   CDN LIBRARY LOADER
+   --------------------------------------------------------- */
+
+function loadScript(src) {
+
+  return new Promise(function(resolve, reject) {
+
+    const existing = document.querySelector(
+      'script[src="' + src + '"]'
+    );
+
+    if (existing) {
+
+      if (existing.dataset.loaded === "true") {
+        resolve();
+      } else {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
       }
+
+      return;
     }
 
-    // Progress Bar Updater
-    function setProgress(prefix, text, pct) {
-      var wrap = document.getElementById(prefix + '-progress');
-      var txt = document.getElementById(prefix + '-prog-text');
-      var pctLabel = document.getElementById(prefix + '-prog-pct');
-      var fill = document.getElementById(prefix + '-prog-fill');
-      if (wrap) wrap.style.display = 'block';
-      if (txt) txt.innerText = text;
-      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
-      if (fill) fill.style.width = pct + '%';
+    const script = document.createElement("script");
+
+    script.src = src;
+    script.async = true;
+
+    script.onload = function() {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+
+    script.onerror = function() {
+      reject(
+        new Error("Could not load required PDF library.")
+      );
+    };
+
+    document.head.appendChild(script);
+
+  });
+
+}
+
+
+async function ensurePdfLib() {
+
+  if (window.PDFLib) return;
+
+  await loadScript(
+    "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"
+  );
+
+}
+
+
+async function ensurePdfJs() {
+
+  if (window.pdfjsLib) return;
+
+  await loadScript(
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"
+  );
+
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+
+}
+
+
+/* ---------------------------------------------------------
+   UTILITIES
+   --------------------------------------------------------- */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+
+function setProgress(prefix, text, pct) {
+
+  pct = Math.max(0, Math.min(100, pct));
+
+  const wrap = $(prefix + "-progress");
+  const txt = $(prefix + "-prog-text");
+  const pctLabel = $(prefix + "-prog-pct");
+  const fill = $(prefix + "-prog-fill");
+
+  if (wrap) wrap.style.display = "block";
+  if (txt) txt.textContent = text;
+  if (pctLabel) pctLabel.textContent = Math.round(pct) + "%";
+  if (fill) fill.style.width = pct + "%";
+
+}
+
+
+function setMessage(prefix, message, type) {
+
+  const el = $(prefix + "-msg");
+
+  if (!el) return;
+
+  el.className = "status-msg";
+
+  if (type) {
+    el.classList.add(type);
+  }
+
+  el.textContent = message;
+
+}
+
+
+function setButton(prefix, disabled) {
+
+  const button = $(prefix + "-btn");
+
+  if (button) {
+    button.disabled = disabled;
+  }
+
+}
+
+
+function formatBytes(bytes) {
+
+  if (!bytes) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB"];
+
+  const index =
+    Math.floor(Math.log(bytes) / Math.log(1024));
+
+  return (
+    (bytes / Math.pow(1024, index)).toFixed(
+      index === 0 ? 0 : 1
+    ) +
+    " " +
+    units[index]
+  );
+
+}
+
+
+function safeFilename(name) {
+
+  return name
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+    .replace(/\s+/g, "_");
+
+}
+
+
+function triggerDownload(bytes, filename, type) {
+
+  const blob = new Blob([bytes], {
+    type: type
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  link.remove();
+
+  setTimeout(function() {
+    URL.revokeObjectURL(url);
+  }, 2000);
+
+}
+
+
+function yieldToBrowser() {
+
+  return new Promise(function(resolve) {
+
+    setTimeout(resolve, 0);
+
+  });
+
+}
+
+
+/* ---------------------------------------------------------
+   FILE INFORMATION
+   --------------------------------------------------------- */
+
+function showFileInfo(inputId, outputId) {
+
+  const input = $(inputId);
+  const output = $(outputId);
+
+  if (!input || !output) return;
+
+  if (!input.files.length) {
+
+    output.textContent = "";
+    return;
+
+  }
+
+  if (input.files.length === 1) {
+
+    const file = input.files[0];
+
+    output.textContent =
+      file.name + " • " + formatBytes(file.size);
+
+  } else {
+
+    let total = 0;
+
+    for (const file of input.files) {
+      total += file.size;
     }
 
-    // Direct Browser Download
-    function triggerDownload(bytes, filename) {
-      var blob = new Blob([bytes], { type: 'application/pdf' });
-      var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    output.textContent =
+      input.files.length +
+      " files • " +
+      formatBytes(total);
 
-    // ==========================================
-    // TOOL 1: WATERMARK CLEANER & CONTRAST ENGINE
-    // ==========================================
-    async function executeCleanWatermark() {
-      var input = document.getElementById('cleaner-file');
-      var msg = document.getElementById('cleaner-msg');
-      var btn = document.getElementById('cleaner-btn');
+  }
 
-      if (!input.files || input.files.length === 0) {
-        alert('Please choose a PDF file first!');
-        return;
-      }
+}
 
-      var file = input.files[0];
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('cleaner', 'Reading PDF pages...', 5);
 
-      try {
-        var threshold = parseInt(document.getElementById('cleaner-slider').value, 10);
-        var fileBytes = await file.arrayBuffer();
-        
-        var loadingTask = pdfjsLib.getDocument({ data: fileBytes });
-        var pdf = await loadingTask.promise;
-        var totalPages = pdf.numPages;
+[
+  ["cleaner-file", "cleaner-file-info"],
+  ["nup-file", "nup-file-info"],
+  ["merge-file", "merge-file-info"],
+  ["img-file", "img-file-info"],
+  ["split-file", "split-file-info"]
+].forEach(function(pair) {
 
-        var outDoc = await PDFLib.PDFDocument.create();
-        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  const input = $(pair[0]);
 
-        for (var pageNum = 1; pageNum <= totalPages; pageNum++) {
-          var pct = Math.round(5 + ((pageNum / totalPages) * 85));
-          setProgress('cleaner', 'Cleaning page ' + pageNum + ' of ' + totalPages + '...', pct);
+  input.addEventListener("change", function() {
 
-          var page = await pdf.getPage(pageNum);
-          var viewport = page.getViewport({ scale: 1.8 }); // 1.8x scale balances crystal-clear print resolution & fast browser execution
+    showFileInfo(pair[0], pair[1]);
 
-          var canvas = document.createElement('canvas');
-          var ctx = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+  });
 
-          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+});
 
-          var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var data = imgData.data;
-          var darkCap = Math.max(70, threshold - 65);
 
-          // Pixel-level luminance analysis
-          for (var i = 0; i < data.length; i += 4) {
-            var gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-            if (gray >= threshold) {
-              data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
-            } else if (gray <= darkCap) {
-              data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
-            } else {
-              var norm = (gray - darkCap) / (threshold - darkCap);
-              var val = Math.floor(norm * 255);
-              data[i] = val; data[i + 1] = val; data[i + 2] = val;
-            }
-          }
-          ctx.putImageData(imgData, 0, 0);
+/* ---------------------------------------------------------
+   THRESHOLD SLIDER
+   --------------------------------------------------------- */
 
-          var cleanDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          var cleanImgBytes = await fetch(cleanDataUrl).then(function(r){ return r.arrayBuffer(); });
-          var cleanImg = await outDoc.embedJpg(cleanImgBytes);
+$("cleaner-slider").addEventListener(
+  "input",
+  function() {
 
-          var outPage = outDoc.addPage([595.28, 841.89]); // Standard A4 points
-    
+    $("slider-val").textContent = this.value;
+
+  }
+);
+
+
+/* =========================================================
+   TOOL 1 — WATERMARK CLEANER
+   ========================================================= */
+
+async function executeCleanWatermark() {
+
+  const input = $("cleaner-file");
+
+  if (!input.files.length) {
+
+    setMessage(
+      "cleaner",
+      "Please select a PDF file first.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  const file = input.files[0];
+
+  setButton("cleaner", true);
+
+  setMessage("cleaner", "", "");
+
+  setProgress(
+    "cleaner",
+    "Loading PDF engine...",
+    3
+  );
+
+  try {
+
+    await ensurePdfLib();
+
+    await ensurePdfJs();
+
+    await yieldToBrowser();
+
+    const threshold =
+      parseInt(
+        $("cleaner-slider").value,
+        10
+      );
+
+    const fileBytes =
+      new Uint8Array(
+        await file.arrayBuffer()
+      );
+
+    setProgress(
+      "cleaner",
+      "Reading PDF...",
+      5
+    );
+
+    const loadingTask =
+      window.pdfjsLib.getDocument({
+        data: fileBytes
+      });
+
+    const pdf =
+      await loadingTask.promise;
+
+    const totalPages =
+      pdf.numPages;
+
+    const outDoc =
+      await window.PDFLib.PDFDocument.create();
+
+    const font =
+      await outDoc.embedFont(
+        window.PDFLib.StandardFonts.HelveticaBold
+      );
+
+    /*
+      Rendering at 1.5 instead of 2.0 greatly reduces
+      memory usage while keeping good print quality.
+    */
+
+    const renderScale = 1.5;
+
+    for (
+      let pageNum = 1;
+      pageNum <= totalPages;
+      pageNum++
+    ) {
+
+      const percent =
+        5 +
+        (pageNum / totalPages) * 88;
+
+      setProgress(
+        "cleaner",
+        "Cleaning page " +
+          pageNum +
+          " of " +
+          totalPages +
+          "...",
+        percent
+      );
+
+      await yieldToBrowser();
+
+      const page =
+        await pdf.getPage(pageNum);
+
+      const viewport =
+        page.getViewport({
+          scale: renderScale
+        });
+
+      const canvas =
+        document.createElement("canvas");
+
+      const ctx =
+        canvas.getContext(
+          "2d",
+          { willReadFrequently: true }
+        );
+
+      canvas.width =
+        Math.ceil(viewport.width);
+
+      canvas.height =
+        Math.ceil(viewport.height);
+
+      await page.render({
+        canvasContext: ctx,
+        viewport: viewport
+      }).promise;
+
+      const imgData =
+        ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+      const data =
+        imgData.data;
+
+      const darkCap =
+        Math.max(
+          70,
+          threshold - 65
+        );
+
+      const range =
+        Math.max(
+          1,
+          threshold - darkCap
+        );
+
+      /*
+        Convert to grayscale and remove
+        pixels above threshold.
+      */
+
+      for (
+        let i = 0;
+        i < data.length;
+        i += 4
+      ) {
+
+        const gray =
+          0.299 * data[i] +
+          0.587 * data[i + 1] +
+          0.114 * data[i + 2];
+
+        if (gray >= th
