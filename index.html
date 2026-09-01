@@ -1,1368 +1,581 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#e11d48"><title>DocuLoom — Free PDF Tools</title><!-- PDF LIBRARY --><script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script><!-- PDF.JS --><script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script><style>
-
-:root{
-  --primary:#e11d48;
-  --primary-dark:#be123c;
-  --bg:#f8fafc;
-  --card:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
-  --border:#e2e8f0;
-  --success:#059669;
-  --error:#dc2626;
-}
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html{
-  min-height:100%;
-}
-
-body{
-  min-height:100vh;
-  background:var(--bg);
-  color:var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
-  display:flex;
-  flex-direction:column;
-}
-
-header{
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  text-align:center;
-  padding:16px 10px;
-}
-
-.brand{
-  text-decoration:none;
-  font-size:24px;
-  font-weight:800;
-  color:var(--primary);
-}
-
-.brand span{
-  color:var(--text);
-}
-
-/* ---------------- TABS ---------------- */
-
-.tab-radio{
-  display:none;
-}
-
-.nav-tabs{
-  display:flex;
-  gap:8px;
-  padding:12px 10px;
-  overflow-x:auto;
-  justify-content:center;
-  background:var(--bg);
-  scrollbar-width:none;
-}
-
-.nav-tabs::-webkit-scrollbar{
-  display:none;
-}
-
-.tab-label{
-  flex:0 0 auto;
-  padding:9px 13px;
-  border:1px solid var(--border);
-  background:#fff;
-  border-radius:30px;
-  font-size:13px;
-  font-weight:700;
-  color:var(--muted);
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-#r-cleaner:checked ~ .nav-tabs label[for="r-cleaner"],
-#r-nup:checked ~ .nav-tabs label[for="r-nup"],
-#r-merge:checked ~ .nav-tabs label[for="r-merge"],
-#r-img:checked ~ .nav-tabs label[for="r-img"],
-#r-split:checked ~ .nav-tabs label[for="r-split"]{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:#fff;
-}
-
-/* ---------------- MAIN ---------------- */
-
-main{
-  width:100%;
-  max-width:650px;
-  margin:12px auto;
-  padding:0 12px;
-  flex:1;
-}
-
-.tool-panel{
-  display:none;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:15px;
-  padding:20px 15px;
-  box-shadow:0 4px 15px rgba(15,23,42,.05);
-}
-
-#r-cleaner:checked ~ main #panel-cleaner,
-#r-nup:checked ~ main #panel-nup,
-#r-merge:checked ~ main #panel-merge,
-#r-img:checked ~ main #panel-img,
-#r-split:checked ~ main #panel-split{
-  display:block;
-}
-
-.tool-title{
-  font-size:21px;
-  font-weight:800;
-  text-align:center;
-  margin-bottom:5px;
-}
-
-.tool-desc{
-  color:var(--muted);
-  font-size:13px;
-  line-height:1.5;
-  text-align:center;
-  margin-bottom:18px;
-}
-
-/* ---------------- UPLOAD ---------------- */
-
-.upload-box{
-  background:#f1f5f9;
-  border:2px dashed #cbd5e1;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-.upload-box label{
-  display:block;
-  font-size:14px;
-  font-weight:750;
-  margin-bottom:9px;
-}
-
-input[type=file]{
-  width:100%;
-  min-height:45px;
-  padding:7px;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:9px;
-  font-size:13px;
-  color:var(--muted);
-}
-
-.file-info{
-  margin-top:8px;
-  color:var(--muted);
-  font-size:12px;
-  word-break:break-word;
-}
-
-/* ---------------- BUTTON ---------------- */
-
-.action-btn{
-  width:100%;
-  min-height:48px;
-  border:none;
-  border-radius:12px;
-  background:var(--primary);
-  color:#fff;
-  font-size:15px;
-  font-weight:800;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-
-.action-btn:active{
-  background:var(--primary-dark);
-}
-
-.action-btn:disabled{
-  opacity:.55;
-  cursor:not-allowed;
-}
-
-/* ---------------- PROGRESS ---------------- */
-
-.progress-box{
-  display:none;
-  margin-top:18px;
-}
-
-.progress-top{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  font-size:12px;
-  font-weight:700;
-}
-
-.progress-bg{
-  width:100%;
-  height:10px;
-  background:#e2e8f0;
-  border-radius:20px;
-  overflow:hidden;
-  margin-top:7px;
-}
-
-.progress-fill{
-  width:0%;
-  height:100%;
-  background:var(--primary);
-  transition:width:.2s linear;
-}
-
-.status{
-  min-height:25px;
-  margin-top:12px;
-  text-align:center;
-  font-size:13px;
-  font-weight:700;
-  line-height:1.4;
-}
-
-.success{
-  color:var(--success);
-}
-
-.error{
-  color:var(--error);
-}
-
-/* ---------------- CLEANER ---------------- */
-
-.threshold-box{
-  background:#f8fafc;
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:13px;
-  margin-bottom:15px;
-}
-
-.threshold-head{
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-  font-weight:750;
-}
-
-#slider-val{
-  color:var(--primary);
-}
-
-.slider{
-  width:100%;
-  accent-color:var(--primary);
-  margin:10px 0;
-}
-
-.guide-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:11px;
-}
-
-.guide-table td{
-  padding:3px 0;
-  color:var(--muted);
-}
-
-/* ---------------- FOOTER ---------------- */
-
-footer{
-  background:#fff;
-  border-top:1px solid var(--border);
-  text-align:center;
-  padding:18px 10px;
-  color:var(--muted);
-  font-size:12px;
-  margin-top:20px;
-}
-
-.privacy{
-  margin-top:5px;
-  font-size:11px;
-}
-
-/* ---------------- MOBILE ---------------- */
-
-@media(max-width:600px){
-
-  header{
-    padding:14px 8px;
-  }
-
-  .brand{
-    font-size:22px;
-  }
-
-  .nav-tabs{
-    justify-content:flex-start;
-  }
-
-  main{
-    margin-top:8px;
-    padding:0 9px;
-  }
-
-  .tool-panel{
-    padding:18px 13px;
-  }
-
-  .tool-title{
-    font-size:19px;
-  }
-
-}
-
-</style></head><body><header>
-<a class="brand" href="index.html">
-Docu<span>Loom</span>
-</a>
-</header><input type="radio" name="tab" id="r-cleaner" class="tab-radio" checked>
-<input type="radio" name="tab" id="r-nup" class="tab-radio">
-<input type="radio" name="tab" id="r-merge" class="tab-radio">
-<input type="radio" name="tab" id="r-img" class="tab-radio">
-<input type="radio" name="tab" id="r-split" class="tab-radio"><nav class="nav-tabs"><label for="r-cleaner" class="tab-label">
-🧼 Clean Watermark
-</label><label for="r-nup" class="tab-label">
-📄 4 Pages in 1
-</label><label for="r-merge" class="tab-label">
-📑 Merge
-</label><label for="r-img" class="tab-label">
-🖼️ Images to PDF
-</label><label for="r-split" class="tab-label">
-✂️ Split
-</label></nav><main><!-- =====================================================
-     WATERMARK CLEANER
-===================================================== --><section id="panel-cleaner" class="tool-panel"><h2 class="tool-title">
-Watermark Cleaner
-</h2><p class="tool-desc">
-Clean gray backgrounds and make text darker for printing.
-</p><div class="upload-box"><label>Select PDF:</label>
-
-<input
-type="file"
-id="cleaner-file"
-accept="application/pdf"
-
-«»
-
-<div id="cleaner-info" class="file-info"></div></div><div class="threshold-box"><div class="threshold-head"><span>Cleaning Threshold</span>
-
-<span id="slider-val">168</span>
-
-</div><input
-type="range"
-id="cleaner-slider"
-class="slider"
-min="130"
-max="210"
-value="168"
-
-«»
-
-<table class="guide-table"><tr>
-<td><b>130–155</b></td>
-<td>Very light marks</td>
-</tr><tr>
-<td><b>160–175</b></td>
-<td>Normal gray watermark</td>
-</tr><tr>
-<td><b>180–210</b></td>
-<td>Darker watermark</td>
-</tr></table></div><button
-id="cleaner-btn"
-class="action-btn"
-onclick="executeCleaner()"
-
-«»
-
-Remove Watermark & Download
-</button>
-
-<div id="cleaner-progress" class="progress-box"><div class="progress-top"><span id="cleaner-text">
-Starting...
-</span><span id="cleaner-percent">
-0%
-</span></div><div class="progress-bg"><div
-id="cleaner-fill"
-class="progress-fill"
-></div></div></div><div id="cleaner-status" class="status"></div></section><!-- =====================================================
-     4 IN 1
-===================================================== --><section id="panel-nup" class="tool-panel"><h2 class="tool-title">
-4 Pages in 1 Sheet
-</h2><p class="tool-desc">
-Put four PDF pages on one printable sheet.
-</p><div class="upload-box"><label>Select PDF:</label>
-
-<input
-type="file"
-id="nup-file"
-accept="application/pdf"
-
-«»
-
-<div id="nup-info" class="file-info"></div></div><button
-id="nup-btn"
-class="action-btn"
-onclick="execute4In1()"
-
-«»
-
-Convert to 4-in-1 & Download
-</button>
-
-<div id="nup-progress" class="progress-box"><div class="progress-top"><span id="nup-text">
-Starting...
-</span><span id="nup-percent">
-0%
-</span></div><div class="progress-bg"><div
-id="nup-fill"
-class="progress-fill"
-></div></div></div><div id="nup-status" class="status"></div></section><!-- =====================================================
-     MERGE
-===================================================== --><section id="panel-merge" class="tool-panel"><h2 class="tool-title">
-Merge PDFs
-</h2><p class="tool-desc">
-Combine multiple PDF files into one PDF.
-</p><div class="upload-box"><label>Select PDFs:</label>
-
-<input
-type="file"
-id="merge-file"
-multiple
-accept="application/pdf"
-
-«»
-
-<div id="merge-info" class="file-info"></div></div><button
-id="merge-btn"
-class="action-btn"
-onclick="executeMerge()"
-
-«»
-
-Merge & Download
-</button>
-
-<div id="merge-progress" class="progress-box"><div class="progress-top"><span id="merge-text">
-Starting...
-</span><span id="merge-percent">
-0%
-</span></div><div class="progress-bg"><div
-id="merge-fill"
-class="progress-fill"
-></div></div></div><div id="merge-status" class="status"></div></section><!-- =====================================================
-     IMAGES TO PDF
-===================================================== --><section id="panel-img" class="tool-panel"><h2 class="tool-title">
-Images to PDF
-</h2><p class="tool-desc">
-Convert JPG and PNG images into one PDF.
-</p><div class="upload-box"><label>Select Images:</label>
-
-<input
-type="file"
-id="img-file"
-multiple
-accept="image/jpeg,image/png"
-
-«»
-
-<div id="img-info" class="file-info"></div></div><button
-id="img-btn"
-class="action-btn"
-onclick="executeImages()"
-
-«»
-
-Convert & Download
-</button>
-
-<div id="img-progress" class="progress-box"><div class="progress-top"><span id="img-text">
-Starting...
-</span><span id="img-percent">
-0%
-</span></div><div class="progress-bg"><div
-id="img-fill"
-class="progress-fill"
-></div></div></div><div id="img-status" class="status"></div></section><!-- =====================================================
-     SPLIT
-===================================================== --><section id="panel-split" class="tool-panel"><h2 class="tool-title">
-Split PDF
-</h2><p class="tool-desc">
-Extract the first page of a PDF.
-</p><div class="upload-box"><label>Select PDF:</label>
-
-<input
-type="file"
-id="split-file"
-accept="application/pdf"
-
-«»
-
-<div id="split-info" class="file-info"></div></div><button
-id="split-btn"
-class="action-btn"
-onclick="executeSplit()"
-
-«»
-
-Extract Page 1 & Download
-</button>
-
-<div id="split-progress" class="progress-box"><div class="progress-top"><span id="split-text">
-Starting...
-</span><span id="split-percent">
-0%
-</span></div><div class="progress-bg"><div
-id="split-fill"
-class="progress-fill"
-></div></div></div><div id="split-status" class="status"></div></section></main><footer>DocuLoom — 100% Free & Client-Side.
-
-<div class="privacy">
-🔒 Files are processed in your browser.
-</div></footer><script>
-
-/* =========================================================
-   PDF.JS SETUP
-========================================================= */
-
-if(window.pdfjsLib){
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-"https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-
-}
-
-
-/* =========================================================
-   COMMON FUNCTIONS
-========================================================= */
-
-function get(id){
-return document.getElementById(id);
-}
-
-
-function setBusy(id,busy){
-
-get(id).disabled=busy;
-
-}
-
-
-function progress(tool,text,value){
-
-get(tool+"-progress").style.display="block";
-
-get(tool+"-text").textContent=text;
-
-get(tool+"-percent").textContent=
-Math.round(value)+"%";
-
-get(tool+"-fill").style.width=
-value+"%";
-
-}
-
-
-function status(tool,text,type){
-
-const el=get(tool+"-status");
-
-el.className="status";
-
-if(type){
-el.classList.add(type);
-}
-
-el.textContent=text;
-
-}
-
-
-function download(bytes,name,type){
-
-const blob=new Blob([bytes],{type:type});
-
-const url=URL.createObjectURL(blob);
-
-const a=document.createElement("a");
-
-a.href=url;
-a.download=name;
-
-a.style.display="none";
-
-document.body.appendChild(a);
-
-a.click();
-
-document.body.removeChild(a);
-
-setTimeout(function(){
-
-URL.revokeObjectURL(url);
-
-},3000);
-
-}
-
-
-function fileSize(bytes){
-
-if(bytes<1024){
-return bytes+" B";
-}
-
-if(bytes<1024*1024){
-return (bytes/1024).toFixed(1)+" KB";
-}
-
-return (bytes/(1024*1024)).toFixed(1)+" MB";
-
-}
-
-
-/* =========================================================
-   FILE INFORMATION
-========================================================= */
-
-get("cleaner-file").onchange=function(){
-
-if(this.files.length){
-
-get("cleaner-info").textContent=
-this.files[0].name+
-" • "+
-fileSize(this.files[0].size);
-
-}
-
-};
-
-
-get("nup-file").onchange=function(){
-
-if(this.files.length){
-
-get("nup-info").textContent=
-this.files[0].name+
-" • "+
-fileSize(this.files[0].size);
-
-}
-
-};
-
-
-get("merge-file").onchange=function(){
-
-if(this.files.length){
-
-let size=0;
-
-for(const f of this.files){
-size+=f.size;
-}
-
-get("merge-info").textContent=
-this.files.length+
-" files • "+
-fileSize(size);
-
-}
-
-};
-
-
-get("img-file").onchange=function(){
-
-if(this.files.length){
-
-get("img-info").textContent=
-this.files.length+
-" image"+
-(this.files.length>1?"s":"");
-
-}
-
-};
-
-
-get("split-file").onchange=function(){
-
-if(this.files.length){
-
-get("split-info").textContent=
-this.files[0].name+
-" • "+
-fileSize(this.files[0].size);
-
-}
-
-};
-
-
-/* =========================================================
-   SLIDER
-========================================================= */
-
-get("cleaner-slider").oninput=function(){
-
-get("slider-val").textContent=this.value;
-
-};
-
-
-/* =========================================================
-   4 IN 1
-   BASED ON YOUR ORIGINAL WORKING METHOD
-========================================================= */
-
-async function execute4In1(){
-
-const input=get("nup-file");
-
-if(!input.files.length){
-
-status(
-"nup",
-"Please select a PDF first.",
-"error"
-);
-
-return;
-
-}
-
-if(!window.PDFLib){
-
-status(
-"nup",
-"PDF engine is still loading. Please wait a few seconds and try again.",
-"error"
-);
-
-return;
-
-}
-
-const file=input.files[0];
-
-setBusy("nup-btn",true);
-
-status("nup","","");
-
-progress(
-"nup",
-"Reading PDF...",
-5
-);
-
-try{
-
-const bytes=
-await file.arrayBuffer();
-
-const srcDoc=
-await PDFLib.PDFDocument.load(bytes);
-
-const outDoc=
-await PDFLib.PDFDocument.create();
-
-const font=
-await outDoc.embedFont(
-PDFLib.StandardFonts.HelveticaBold
-);
-
-const totalPages=
-srcDoc.getPageCount();
-
-if(totalPages===0){
-
-throw new Error(
-"PDF has no pages."
-);
-
-}
-
-
-/* Determine orientation */
-
-const firstPage=
-srcDoc.getPage(0);
-
-const landscape=
-firstPage.getWidth() >=
-firstPage.getHeight();
-
-
-const SHEET_WIDTH=
-landscape
-?841.89
-:595.28;
-
-const SHEET_HEIGHT=
-landscape
-?595.28
-:841.89;
-
-
-const margin=10;
-const gap=8;
-const footerSpace=16;
-
-
-const availWidth=
-SHEET_WIDTH-(margin*2);
-
-const availHeight=
-SHEET_HEIGHT-
-(margin*2)-
-footerSpace;
-
-
-const slotW=
-(availWidth-gap)/2;
-
-const slotH=
-(availHeight-gap)/2;
-
-
-/*
- Embed source pages once.
- This is much faster than repeatedly
- loading the PDF.
-*/
-
-progress(
-"nup",
-"Preparing pages...",
-10
-);
-
-const embeddedPages=
-await outDoc.embedPdf(
-srcDoc,
-srcDoc.getPageIndices()
-);
-
-
-const sheetCount=
-Math.ceil(totalPages/4);
-
-
-for(
-let i=0;
-i<totalPages;
-i+=4
-){
-
-const sheetNumber=
-Math.floor(i/4)+1;
-
-
-progress(
-"nup",
-"Creating sheet "+
-sheetNumber+
-" of "+
-sheetCount+"...",
-10+
-(i/totalPages)*82
-);
-
-
-/*
- Let mobile browser breathe.
-*/
-
-await new Promise(
-resolve=>setTimeout(resolve,0)
-);
-
-
-const sheet=
-outDoc.addPage([
-SHEET_WIDTH,
-SHEET_HEIGHT
-]);
-
-
-const batch=
-embeddedPages.slice(
-i,
-i+4
-);
-
-
-const sample=
-batch[0];
-
-const sampleSize=
-sample.scale(1);
-
-
-const scale=
-Math.min(
-slotW/sampleSize.width,
-slotH/sampleSize.height
-);
-
-
-const scaledW=
-sampleSize.width*scale;
-
-const scaledH=
-sampleSize.height*scale;
-
-
-const totalGridW=
-scaledW*2+gap;
-
-const totalGridH=
-scaledH*2+gap;
-
-
-const startX=
-(SHEET_WIDTH-totalGridW)/2;
-
-const startY=
-footerSpace+
-margin+
-((availHeight-totalGridH)/2);
-
-
-const positions=[
-
-{
-x:startX,
-y:startY+scaledH+gap
-},
-
-{
-x:startX+scaledW+gap,
-y:startY+scaledH+gap
-},
-
-{
-x:startX,
-y:startY
-},
-
-{
-x:startX+scaledW+gap,
-y:startY
-}
-
-];
-
-
-for(
-let j=0;
-j<batch.length;
-j++
-){
-
-const p=batch[j];
-
-const pos=positions[j];
-
-sheet.drawPage(
-p,
-{
-x:pos.x,
-y:pos.y,
-xScale:scale,
-yScale:scale
-}
-);
-
-}
-
-
-/* Small footer */
-
-const brand="DocuLoom";
-
-const width=
-font.widthOfTextAtSize(
-brand,
-8
-);
-
-sheet.drawText(
-brand,
-{
-x:(SHEET_WIDTH-width)/2,
-y:5,
-size:8,
-font:font,
-color:PDFLib.rgb(
-.4,.4,.4
-)
-}
-);
-
-}
-
-
-progress(
-"nup",
-"Saving PDF...",
-95
-);
-
-const output=
-await outDoc.save({
-useObjectStreams:true
-});
-
-progress(
-"nup",
-"Preparing download...",
-98
-);
-
-download(
-output,
-"DocuLoom_4in1_"+file.name,
-"application/pdf"
-);
-
-progress(
-"nup",
-"Done!",
-100
-);
-
-status(
-"nup",
-"✓ "+sheetCount+
-" printable sheet"+
-(sheetCount>1?"s":"")+
-" created successfully.",
-"success"
-);
-
-}catch(error){
-
-console.error(error);
-
-status(
-"nup",
-"❌ "+(
-error.message||
-"Could not process this PDF."
-),
-"error"
-);
-
-}finally{
-
-setBusy("nup-btn",false);
-
-}
-
-}
-
-
-/* =========================================================
-   MERGE
-========================================================= */
-
-async function executeMerge(){
-
-const input=get("merge-file");
-
-if(input.files.length<2){
-
-status(
-"merge",
-"Please select at least 2 PDF files.",
-"error"
-);
-
-return;
-
-}
-
-if(!window.PDFLib){
-
-status(
-"merge",
-"PDF engine is still loading.",
-"error"
-);
-
-return;
-
-}
-
-setBusy("merge-btn",true);
-
-status("merge","","");
-
-try{
-
-const output=
-await PDFLib.PDFDocument.create();
-
-const files=
-Array.from(input.files);
-
-
-for(
-let i=0;
-i<files.length;
-i++
-){
-
-progress(
-"merge",
-"Merging file "+
-(i+1)+
-" of "+
-files.length+"...",
-5+(i/files.length)*88
-);
-
-await new Promise(
-resolve=>setTimeout(resolve,0)
-);
-
-
-const bytes=
-await files[i].arrayBuffer();
-
-const source=
-await PDFLib.PDFDocument.load(
-bytes
-);
-
-
-const pages=
-await output.copyPages(
-source,
-source.getPageIndices()
-);
-
-
-for(const page of pages){
-
-output.addPage(page);
-
-}
-
-}
-
-
-progress(
-"merge",
-"Saving PDF...",
-96
-);
-
-
-const bytes=
-await output.save({
-useObjectStreams:true
-});
-
-
-download(
-bytes,
-"DocuLoom_Merged.pdf",
-"application/pdf"
-);
-
-
-progress(
-"merge",
-"Done!",
-100
-);
-
-
-status(
-"merge",
-"✓ PDFs merged successfully.",
-"success"
-);
-
-
-}catch(error){
-
-console.error(error);
-
-status(
-"merge",
-"❌ "+
-(error.message||
-"Merge failed."),
-"error"
-);
-
-}finally{
-
-setBusy("merge-btn",false);
-
-}
-
-}
-
-
-/* =========================================================
-   IMAGES TO PDF
-========================================================= */
-
-async function executeImages(){
-
-const input=get("img-file");
-
-if(!input.files.length){
-
-status(
-"img",
-"Please select at least one image.",
-"error"
-);
-
-return;
-
-}
-
-if(!window.PDFLib){
-
-status(
-"img",
-"PDF engine is still loading.",
-"error"
-);
-
-return;
-
-}
-
-setBusy("img-btn",true);
-
-status("img","","");
-
-try{
-
-const pdf=
-await PDFLib.PDFDocument.create();
-
-const files=
-Array.from(input.files);
-
-
-for(
-let i=0;
-i<files.length;
-i++
-){
-
-const file=files[i];
-
-progress(
-"img",
-"Adding image "+
-(i+1)+
-" of "+
-files.length+"...",
-5+(i/files.length)*88
-);
-
-await new Promise(
-resolve=>setTimeout(resolve,0)
-);
-
-
-const bytes=
-await file.arrayBuffer();
-
-
-let image;
-
-
-if(
-file.type==="image/png"
-){
-
-image=
-await pdf.embedPng(bytes);
-
-}else{
-
-image=
-await pdf.embedJpg(bytes);
-
-}
-
-
-const size=
-image.scale(1);
-
-
-const A4W=595.28;
-const A4H=841.89;
-const margin=15;
-
-
-const maxW=
-A4W-margin*2;
-
-const maxH=
-A4H-margin*2;
-
-
-const scale=
-Math.min(
-maxW/size.width,
-maxH/size.height
-);
-
-
-const width=
-size.width*scale;
-
-const height=
-size.height*scale;
-
-
-const page=
-pdf.addPage([
-A4W,
-A4H
-]);
-
-
-page.drawImage(
-image
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DocuLoom — Clean & Convert PDF Tools</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #e11d48;
+      --primary-hover: #be123c;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .brand span {
+      color: var(--text);
+    }
+
+    /* Tab Switcher */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin: 1.5rem 1rem 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      max-width: 200px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.25);
+    }
+
+    main {
+      max-width: 520px;
+      width: 100%;
+      margin: 1.25rem auto;
+      padding: 0 1rem;
+      flex: 1;
+    }
+
+    .tool-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .tool-panel.active {
+      display: block;
+    }
+
+    .tool-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .tool-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+
+    .upload-box {
+      background: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius);
+      padding: 1.5rem 1rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .upload-box label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: block;
+      margin-bottom: 0.6rem;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      font-size: 0.9rem;
+      color: var(--muted);
+      padding: 0.6rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .file-details {
+      font-size: 0.85rem;
+      color: #0f172a;
+      margin-top: 0.75rem;
+      padding: 0.6rem;
+      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: none;
+      word-break: break-all;
+    }
+
+    .threshold-box {
+      margin-bottom: 1.25rem;
+      text-align: left;
+      background: #f8fafc;
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      accent-color: var(--primary);
+      margin: 0.5rem 0;
+    }
+
+    .guide-table {
+      width: 100%;
+      font-size: 0.75rem;
+      margin-top: 0.4rem;
+      border-collapse: collapse;
+    }
+
+    .guide-table td {
+      padding: 2px 0;
+      color: var(--muted);
+    }
+
+    .action-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.95rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .action-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .progress-box {
+      display: none;
+      margin-top: 1.25rem;
+      text-align: left;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.15s ease;
+    }
+
+    .status-msg {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-msg.success { color: #059669; }
+    .status-msg.error { color: #dc2626; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: #ffffff;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="brand">Docu<span>Loom</span></a>
+  </header>
+
+  <div class="nav-tabs">
+    <button id="btn-tab-cleaner" class="tab-btn active" onclick="switchTab('cleaner')">🧼 Clean Watermark</button>
+    <button id="btn-tab-nup" class="tab-btn" onclick="switchTab('nup')">📄 4 Pages in 1</button>
+  </div>
+
+  <main>
+    <div id="panel-cleaner" class="tool-panel active">
+      <h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
+      <p class="tool-desc">Erases background watermarks/stamps and darkens text for clear printing.</p>
+
+      <div class="upload-box">
+        <label for="cleaner-file">Choose PDF File:</label>
+        <input type="file" id="cleaner-file" accept="application/pdf" />
+        <div id="cleaner-info" class="file-details"></div>
+      </div>
+
+      <div class="threshold-box">
+        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem;">
+          <span>Cleaning Threshold</span>
+          <span id="slider-val" style="color:var(--primary);">168</span>
+        </div>
+        <input type="range" id="cleaner-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('slider-val').innerText = this.value">
+        <table class="guide-table">
+          <tr><td><strong>130–155:</strong></td><td>Faint handwriting / light math symbols</td></tr>
+          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Recommended)</td></tr>
+          <tr><td><strong>180–210:</strong></td><td>Dark gray watermarks</td></tr>
+        </table>
+      </div>
+
+      <button id="cleaner-btn" class="action-btn" onclick="executeCleanWatermark()">Remove Watermark & Download</button>
+
+      <div id="cleaner-progress" class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
+          <span id="cleaner-prog-text">Processing...</span>
+          <span id="cleaner-prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg"><div id="cleaner-prog-fill" class="progress-bar-fill"></div></div>
+      </div>
+      <div id="cleaner-msg" class="status-msg"></div>
+    </div>
+
+    <div id="panel-nup" class="tool-panel">
+      <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
+      <p class="tool-desc">Combines 4 slides onto 1 sheet to save paper with large legible text.</p>
+
+      <div class="upload-box">
+        <label for="nup-file">Choose PDF File:</label>
+        <input type="file" id="nup-file" accept="application/pdf" />
+        <div id="nup-info" class="file-details"></div>
+      </div>
+
+      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
+
+      <div id="nup-progress" class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
+          <span id="nup-prog-text">Converting...</span>
+          <span id="nup-prog-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg"><div id="nup-prog-fill" class="progress-bar-fill"></div></div>
+      </div>
+      <div id="nup-msg" class="status-msg"></div>
+    </div>
+  </main>
+
+  <footer>
+    DocuLoom — 100% Free & Client-Side.
+  </footer>
+
+  <script>
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.getElementById('panel-cleaner').classList.toggle('active', tabId === 'cleaner');
+      document.getElementById('panel-nup').classList.toggle('active', tabId === 'nup');
+
+      document.getElementById('btn-tab-cleaner').classList.toggle('active', tabId === 'cleaner');
+      document.getElementById('btn-tab-nup').classList.toggle('active', tabId === 'nup');
+    }
+
+    // Attach native input listeners
+    document.getElementById('cleaner-file').addEventListener('change', function(e) {
+      var info = document.getElementById('cleaner-info');
+      if (e.target.files && e.target.files.length > 0) {
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
+      }
+    });
+
+    document.getElementById('nup-file').addEventListener('change', function(e) {
+      var info = document.getElementById('nup-info');
+      if (e.target.files && e.target.files.length > 0) {
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
+      }
+    });
+
+    function setProgress(prefix, text, pct) {
+      var wrap = document.getElementById(prefix + '-progress');
+      var txt = document.getElementById(prefix + '-prog-text');
+      var pctLabel = document.getElementById(prefix + '-prog-pct');
+      var fill = document.getElementById(prefix + '-prog-fill');
+      if (wrap) wrap.style.display = 'block';
+      if (txt) txt.innerText = text;
+      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
+      if (fill) fill.style.width = pct + '%';
+    }
+
+    function triggerDownload(bytes, filename) {
+      var blob = new Blob([bytes], { type: 'application/pdf' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==========================================
+    // 1. WATERMARK CLEANER ENGINE (No-Worker Safe Mode)
+    // ==========================================
+    async function executeCleanWatermark() {
+      var input = document.getElementById('cleaner-file');
+      var msg = document.getElementById('cleaner-msg');
+      var btn = document.getElementById('cleaner-btn');
+
+      if (!input.files || input.files.length === 0) {
+        alert('Please select a PDF file first!');
+        return;
+      }
+
+      var file = input.files[0];
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.innerText = '';
+      setProgress('cleaner', 'Starting PDF engine...', 5);
+
+      try {
+        var threshold = parseInt(document.getElementById('cleaner-slider').value, 10);
+        var fileBytes = await file.arrayBuffer();
+
+        // Standard PDF.js In-Memory Reader
+        var loadingTask = pdfjsLib.getDocument({
+          data: new Uint8Array(fileBytes),
+          disableWorker: true // Prevents mobile worker freeze
+        });
+        var pdf = await loadingTask.promise;
+        var totalPages = pdf.numPages;
+
+        var outDoc = await PDFLib.PDFDocument.create();
+        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+        for (var pageNum = 1; pageNum <= totalPages; pageNum++) {
+          var pct = Math.round(5 + ((pageNum / totalPages) * 85));
+          setProgress('cleaner', 'Cleaning page ' + pageNum + ' of ' + totalPages + '...', pct);
+
+          var page = await pdf.getPage(pageNum);
+          var viewport = page.getViewport({ scale: 1.5 }); // High-definition print balance
+
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          var data = imgData.data;
+          var darkCap = Math.max(70, threshold - 65);
+
+          for (var i = 0; i < data.length; i += 4) {
+            var gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            if (gray >= threshold) {
+              data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
+            } else if (gray <= darkCap) {
+              data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
+            } else {
+              var norm = (gray - darkCap) / (threshold - darkCap);
+              var val = Math.floor(norm * 255);
+              data[i] = val; data[i + 1] = val; data[i + 2] = val;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+
+          var cleanDataUrl = canvas.toDataURL('image/jpeg', 0.90);
+          var cleanImgBytes = await fetch(cleanDataUrl).then(function(r){ return r.arrayBuffer(); });
+          var cleanImg = await outDoc.embedJpg(cleanImgBytes);
+
+          var outPage = outDoc.addPage([595.28, 841.89]);
+          outPage.drawImage(cleanImg, { x: 0, y: 18, width: 595.28, height: 823.89 });
+
+          var brandText = "DocuLoom";
+          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
+          outPage.drawText(brandText, {
+            x: (595.28 - textWidth) / 2,
+            y: 6,
+            size: 8.5,
+            font: font,
+            color: PDFLib.rgb(0.4, 0.4, 0.4)
+          });
+        }
+
+        setProgress('cleaner', 'Finalizing document...', 95);
+        var cleanedBytes = await outDoc.save();
+        triggerDownload(cleanedBytes, 'Cleaned_' + file.name);
+
+        setProgress('cleaner', 'Complete!', 100);
+        msg.className = 'status-msg success';
+        msg.innerText = '✅ Cleaned PDF ready & downloaded!';
+      } catch (err) {
+        console.error(err);
+        msg.className = 'status-msg error';
+        msg.innerText = '❌ Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ==========================================
+    // 2. 4-IN-1 PRINT ENGINE
+    // ==========================================
+    async function execute4In1() {
+      var input = document.getElementById('nup-file');
+      var msg = document.getElementById('nup-msg');
+      var btn = document.getElementById('nup-btn');
+
+      if (!input.files || input.files.length === 0) {
+        alert('Please select a PDF file first!');
+        return;
+      }
+
+      var file = input.files[0];
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.innerText = '';
+      setProgress('nup', 'Reading slide dimensions...', 10);
+
+      try {
+        var fileBytes = await file.arrayBuffer();
+        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
+        var outDoc = await PDFLib.PDFDocument.create();
+        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+        var totalPages = srcDoc.getPageCount();
+        var firstPage = srcDoc.getPage(0);
+        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
+
+        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
+
+        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
+        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
+
+        var margin = 10;
+        var gap = 8;
+        var footerSpace = 16;
+
+        var availWidth = SHEET_WIDTH - (margin * 2);
+        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+
+        var slotW = (availWidth - gap) / 2;
+        var slotH = (availHeight - gap) / 2;
+
+        for (var i = 0; i < totalPages; i += 4) {
+          var pct = Math.round(10 + ((i / totalPages) * 80));
+          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+
+          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
+          var batch = embeddedPages.slice(i, i + 4);
+
+          var sample = batch[0];
+          var sampleSize = sample.scale(1);
+          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
+
+          var scaledW = sampleSize.width * scale;
+          var scaledH = sampleSize.height * scale;
+
+          var totalGridW = (scaledW * 2) + gap;
+          var totalGridH = (scaledH * 2) + gap;
+
+          var startX = (SHEET_WIDTH - totalGridW) / 2;
+          var startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
+
+          var gridCoords = [
+            { x: startX,                   y: startY + scaledH + gap },
+            { x: startX + scaledW + gap,    y: startY + scaledH + gap },
+            { x: startX,                   y: startY },
+            { x: startX + scaledW + gap,    y: startY }
+          ];
+
+          batch.forEach(function(p, idx) {
+            var pos = gridCoords[idx];
+            sheet.drawPage(p, {
+              x: pos.x,
+              y: pos.y,
+              xScale: scale,
+              yScale: scale
+            });
+          });
+
+          var brandText = "DocuLoom";
+          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
+          sheet.drawText(brandText, {
+            x: (SHEET_WIDTH - textWidth) / 2,
+            y: 6,
+            size: 8.5,
+            font: font,
+            color: PDFLib.rgb(0.4, 0.4, 0.4)
+          });
+        }
+
+        setProgress('nup', 'Saving 4-in-1 PDF...', 95);
+        var pdfBytes = await outDoc.save();
+        triggerDownload(pdfBytes, 'DocuLoom_4in1_' + file.name);
+
+        setProgress('nup', 'Done!', 100);
+        msg.className = 'status-msg success';
+        msg.innerText = '✅ Converted ' + totalPages + ' pages into ' + Math.ceil(totalPages / 4) + ' printable sheets!';
+      } catch (err) {
+        console.error(err);
+        msg.className = 'status-msg error';
+        msg.innerText = '❌ Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
