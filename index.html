@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DocuLoom — Free PDF & Image Tools</title>
+  <title>DocuLoom — PDF & Exam Tools</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
   <style>
     :root {
@@ -46,7 +48,6 @@
       font-weight: 800;
       color: var(--primary);
       text-decoration: none;
-      letter-spacing: -0.5px;
     }
 
     .brand span {
@@ -59,7 +60,7 @@
       margin-top: 0.2rem;
     }
 
-    /* 100% PURE CSS TAB SYSTEM - ZERO JS REQUIRED TO SWITCH */
+    /* PURE CSS TABS */
     input[type="radio"].tab-toggle {
       display: none;
     }
@@ -84,7 +85,6 @@
       cursor: pointer;
       text-align: center;
       user-select: none;
-      transition: all 0.2s;
     }
 
     #radio-nup:checked ~ .nav-tabs label[for="radio-nup"],
@@ -228,8 +228,25 @@
       box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
     }
 
-    .action-btn:active {
-      background: var(--primary-hover);
+    .action-btn:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    /* Direct Download Button (Visible after generation) */
+    .direct-download-link {
+      display: none;
+      width: 100%;
+      margin-top: 1rem;
+      background: #059669;
+      color: #ffffff;
+      padding: 0.95rem;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: var(--radius);
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .progress-box {
@@ -262,36 +279,6 @@
 
     .status-msg.success { color: var(--accent); }
     .status-msg.error { color: #f87171; }
-
-    .share-card {
-      margin-top: 1.5rem;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem;
-      text-align: center;
-    }
-
-    .share-card p {
-      font-size: 0.85rem;
-      color: #e2e8f0;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
-
-    .share-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #25d366;
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 0.65rem 1.25rem;
-      border-radius: 9999px;
-      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-    }
 
     footer {
       text-align: center;
@@ -328,12 +315,13 @@
       <p class="tool-desc">Fits 4 lecture slides onto a single sheet in high resolution without blank gaps.</p>
 
       <div class="upload-box">
-        <label for="nup-file">Select Slides/Notes PDF:</label>
+        <label for="nup-file">Select PDF File:</label>
         <input type="file" id="nup-file" accept="application/pdf" />
         <div id="nup-info" class="file-details"></div>
       </div>
 
-      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
+      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert & Save PDF</button>
+      <a id="nup-direct-btn" class="direct-download-link" download="DocuLoom_4in1.pdf">📥 Tap Here to Download PDF</a>
 
       <div id="nup-progress" class="progress-box">
         <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
@@ -366,7 +354,8 @@
         </select>
       </div>
 
-      <button id="exam-btn" class="action-btn" onclick="executeExamResize()">Resize & Download JPG</button>
+      <button id="exam-btn" class="action-btn" onclick="executeExamResize()">Resize & Save Image</button>
+      <a id="exam-direct-btn" class="direct-download-link" download="ExamReady_Image.jpg">📥 Tap Here to Download Image</a>
       <div id="exam-msg" class="status-msg"></div>
     </div>
 
@@ -381,7 +370,8 @@
         <div id="img-info" class="file-details"></div>
       </div>
 
-      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert to PDF & Download</button>
+      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert to PDF & Save</button>
+      <a id="img-direct-btn" class="direct-download-link" download="DocuLoom_Images.pdf">📥 Tap Here to Download PDF</a>
 
       <div id="img-progress" class="progress-box">
         <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
@@ -392,13 +382,6 @@
       </div>
       <div id="img-msg" class="status-msg"></div>
     </div>
-
-    <div class="share-card">
-      <p>🚀 Share DocuLoom with classmates & save xerox costs!</p>
-      <a href="https://api.whatsapp.com/send?text=Free%20student%20tool%3A%20Fit%204%20lecture%20slides%20into%201%20page%20for%20cheap%20printing%20and%20resize%20exam%20photos%20under%2050KB%3A%20https%3A%2F%2Fchandanlalmallick.github.io%2Fdoculoom%2F" target="_blank" class="share-btn">
-        <span>📲 Share on WhatsApp</span>
-      </a>
-    </div>
   </main>
 
   <footer>
@@ -406,29 +389,7 @@
   </footer>
 
   <script>
-    // Robust On-Demand Script Loader (Never Blocks UI)
-    function getPdfLib() {
-      return new Promise(function(resolve, reject) {
-        if (window.PDFLib) {
-          resolve(window.PDFLib);
-          return;
-        }
-        var script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
-        script.onload = function() { resolve(window.PDFLib); };
-        script.onerror = function() {
-          // Backup Mirror
-          var backup = document.createElement('script');
-          backup.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
-          backup.onload = function() { resolve(window.PDFLib); };
-          backup.onerror = function() { reject(new Error('Unable to load PDF library. Please check your internet connection.')); };
-          document.head.appendChild(backup);
-        };
-        document.head.appendChild(script);
-      });
-    }
-
-    // Direct Native File Change Listeners
+    // File Selection Listeners
     document.getElementById('nup-file').addEventListener('change', function(e) {
       var info = document.getElementById('nup-info');
       if (e.target.files && e.target.files.length > 0) {
@@ -438,5 +399,117 @@
     });
 
     document.getElementById('exam-file').addEventListener('change', function(e) {
-      var
-        
+      var info = document.getElementById('exam-info');
+      if (e.target.files && e.target.files.length > 0) {
+        var f = e.target.files[0];
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected:</strong> ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
+      }
+    });
+
+    document.getElementById('img-file').addEventListener('change', function(e) {
+      var info = document.getElementById('img-info');
+      if (e.target.files && e.target.files.length > 0) {
+        info.style.display = 'block';
+        info.innerHTML = '<strong>Selected ' + e.target.files.length + ' image(s)</strong>';
+      }
+    });
+
+    function setProgress(prefix, text, pct) {
+      var wrap = document.getElementById(prefix + '-progress');
+      var txt = document.getElementById(prefix + '-prog-text');
+      var pctLabel = document.getElementById(prefix + '-prog-pct');
+      var fill = document.getElementById(prefix + '-prog-fill');
+      if (wrap) wrap.style.display = 'block';
+      if (txt) txt.innerText = text;
+      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
+      if (fill) fill.style.width = pct + '%';
+    }
+
+    // BULLETPROOF MOBILE DOWNLOAD ENGINE (Auto-Triggers + Shows Direct Download Button)
+    function deliverFile(blob, filename, directBtnId) {
+      var url = URL.createObjectURL(blob);
+      
+      // 1. Configure Persistent Direct Download Button on Screen
+      var directBtn = document.getElementById(directBtnId);
+      if (directBtn) {
+        directBtn.href = url;
+        directBtn.download = filename;
+        directBtn.style.display = 'block';
+      }
+
+      // 2. Trigger Auto-Download
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Delay removal so mobile download managers never lose the file buffer
+      setTimeout(function() {
+        document.body.removeChild(a);
+      }, 3000);
+    }
+
+    // --- 1. 4-IN-1 PRINT ENGINE ---
+    async function execute4In1() {
+      var input = document.getElementById('nup-file');
+      var msg = document.getElementById('nup-msg');
+      var btn = document.getElementById('nup-btn');
+      document.getElementById('nup-direct-btn').style.display = 'none';
+
+      if (!input.files || input.files.length === 0) {
+        alert('Please tap "Choose File" and select a PDF first!');
+        return;
+      }
+
+      var file = input.files[0];
+      btn.disabled = true;
+      msg.className = 'status-msg';
+      msg.innerText = '';
+      setProgress('nup', 'Analyzing document...', 10);
+
+      try {
+        var fileBytes = await file.arrayBuffer();
+        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
+        var outDoc = await PDFLib.PDFDocument.create();
+        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+        var totalPages = srcDoc.getPageCount();
+        var firstPage = srcDoc.getPage(0);
+        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
+
+        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
+
+        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
+        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
+
+        var margin = 10;
+        var gap = 8;
+        var footerSpace = 16;
+
+        var availWidth = SHEET_WIDTH - (margin * 2);
+        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+
+        var slotW = (availWidth - gap) / 2;
+        var slotH = (availHeight - gap) / 2;
+
+        for (var i = 0; i < totalPages; i += 4) {
+          var pct = Math.round(10 + ((i / totalPages) * 80));
+          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+
+          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
+          var batch = embeddedPages.slice(i, i + 4);
+
+          var sample = batch[0];
+          var sampleSize = sample.scale(1);
+          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
+
+          var scaledW = sampleSize.width * scale;
+          var scaledH = sampleSize.height * scale;
+
+          var totalGridW = (scaledW * 2) + gap;
+          var totalGridH = (scaledH * 2) + gap;
+
+          var
+    
