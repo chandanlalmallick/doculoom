@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DocuLoom — Fast & Free PDF Tools</title>
+  <title>DocuLoom — Free PDF Tools</title>
   <style>
     :root {
       --primary: #e11d48;
@@ -20,7 +20,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
@@ -49,7 +49,6 @@
       color: var(--text);
     }
 
-    /* Tab Switcher */
     .nav-tabs {
       display: flex;
       justify-content: center;
@@ -67,7 +66,7 @@
       font-weight: 600;
       color: var(--muted);
       cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      outline: none;
     }
 
     .tab-btn.active {
@@ -84,13 +83,18 @@
       flex: 1;
     }
 
-    .tool-card {
+    .tool-panel {
+      display: none;
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 1.5rem 1.25rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       text-align: center;
+    }
+
+    .tool-panel.active {
+      display: block;
     }
 
     .tool-title {
@@ -106,19 +110,21 @@
       line-height: 1.4;
     }
 
-    .upload-container {
+    .upload-box {
       background: #f1f5f9;
       border: 2px dashed #cbd5e1;
       border-radius: var(--radius);
       padding: 1.25rem 1rem;
       margin-bottom: 1.25rem;
+      text-align: left;
     }
 
-    .upload-container p {
-      font-size: 0.95rem;
+    .upload-box label {
+      font-size: 0.9rem;
       font-weight: 700;
-      margin-bottom: 0.6rem;
       color: #1e293b;
+      display: block;
+      margin-bottom: 0.6rem;
     }
 
     input[type="file"] {
@@ -126,23 +132,20 @@
       width: 100%;
       font-size: 0.9rem;
       color: var(--muted);
-      padding: 0.5rem;
+      padding: 0.6rem;
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 8px;
-      cursor: pointer;
     }
 
-    .file-status {
-      text-align: left;
-      font-size: 0.85rem;
-      color: var(--text);
-      margin-top: 0.75rem;
+    .file-details {
+      font-size: 0.82rem;
+      color: #0f172a;
+      margin-top: 0.6rem;
+      padding: 0.5rem;
       background: #ffffff;
-      padding: 0.6rem;
       border-radius: 6px;
       border: 1px solid var(--border);
-      display: none;
       word-break: break-all;
     }
 
@@ -160,7 +163,6 @@
       height: 6px;
       accent-color: var(--primary);
       margin: 0.5rem 0;
-      cursor: pointer;
     }
 
     .guide-table {
@@ -175,10 +177,6 @@
       color: var(--muted);
     }
 
-    .guide-table td strong {
-      color: var(--text);
-    }
-
     .action-btn {
       width: 100%;
       background: var(--primary);
@@ -189,10 +187,6 @@
       font-weight: 700;
       border-radius: var(--radius);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
     }
 
     .action-btn:disabled {
@@ -200,7 +194,6 @@
       cursor: not-allowed;
     }
 
-    /* Live Progress Bar Components */
     .progress-wrapper {
       display: none;
       margin-top: 1.25rem;
@@ -227,7 +220,7 @@
       width: 0%;
       height: 100%;
       background: var(--primary);
-      transition: width 0.2s ease;
+      transition: width 0.15s ease;
     }
 
     .status-msg {
@@ -257,142 +250,142 @@
   </header>
 
   <div class="nav-tabs">
-    <button id="btn-tab-cleaner" class="tab-btn active" onclick="switchTool('cleaner')">🧼 Clean Watermark</button>
-    <button id="btn-tab-nup" class="tab-btn" onclick="switchTool('nup')">📄 4 Pages in 1</button>
-    <button id="btn-tab-merge" class="tab-btn" onclick="switchTool('merge')">📑 Merge</button>
-    <button id="btn-tab-img2pdf" class="tab-btn" onclick="switchTool('img2pdf')">🖼️ Images to PDF</button>
-    <button id="btn-tab-split" class="tab-btn" onclick="switchTool('split')">✂️ Split</button>
+    <button class="tab-btn active" onclick="openTab('tab-cleaner', this)">🧼 Clean Watermark</button>
+    <button class="tab-btn" onclick="openTab('tab-nup', this)">📄 4 Pages in 1</button>
+    <button class="tab-btn" onclick="openTab('tab-merge', this)">📑 Merge</button>
+    <button class="tab-btn" onclick="openTab('tab-img2pdf', this)">🖼️ Images to PDF</button>
+    <button class="tab-btn" onclick="openTab('tab-split', this)">✂️ Split</button>
   </div>
 
   <main>
-    <div id="tab-cleaner" class="tool-card">
+    <div id="tab-cleaner" class="tool-panel active">
       <h2 class="tool-title">Watermark Cleaner & Enhancer</h2>
-      <p class="tool-desc">Erases background watermarks and sharpens text for dark, clean printing.</p>
+      <p class="tool-desc">Erases background watermarks and makes text dark for clean printing.</p>
 
-      <div class="upload-container">
-        <p>1. Choose PDF File</p>
-        <input type="file" id="cleaner-input" accept="application/pdf" onchange="onFileSelected(this, 'cleaner-file-text', 'cleaner-btn')" />
-        <div id="cleaner-file-text" class="file-status"></div>
+      <div class="upload-box">
+        <label for="cleaner-file">Choose PDF File:</label>
+        <input type="file" id="cleaner-file" accept="application/pdf" />
+        <div id="cleaner-info" class="file-details" style="display:none;"></div>
       </div>
 
       <div class="threshold-box">
         <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem;">
-          <span>Cleaning Intensity</span>
-          <span id="threshold-val" style="color:var(--primary);">168</span>
+          <span>Cleaning Threshold</span>
+          <span id="slider-val" style="color:var(--primary);">168</span>
         </div>
-        <input type="range" id="threshold-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('threshold-val').innerText = this.value">
+        <input type="range" id="cleaner-slider" class="slider" min="130" max="210" value="168" oninput="document.getElementById('slider-val').innerText = this.value">
         <table class="guide-table">
-          <tr><td><strong>130–155:</strong></td><td>Very faint handwriting / light math formulas</td></tr>
-          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Default)</td></tr>
-          <tr><td><strong>180–210:</strong></td><td>Darker gray / colored watermarks</td></tr>
+          <tr><td><strong>130–155:</strong></td><td>Faint handwriting / light math symbols</td></tr>
+          <tr><td><strong>160–175:</strong></td><td>Standard publisher stamps (Recommended)</td></tr>
+          <tr><td><strong>180–210:</strong></td><td>Darker gray stamps</td></tr>
         </table>
       </div>
 
-      <button id="cleaner-btn" class="action-btn" disabled onclick="runCleanWatermark()">Remove Watermark & Download</button>
+      <button id="cleaner-btn" class="action-btn" onclick="executeCleanWatermark()">Remove Watermark & Download</button>
 
       <div id="cleaner-progress" class="progress-wrapper">
         <div class="progress-header">
-          <span id="cleaner-progress-status">Processing...</span>
-          <span id="cleaner-progress-pct">0%</span>
+          <span id="cleaner-prog-text">Starting...</span>
+          <span id="cleaner-prog-pct">0%</span>
         </div>
         <div class="progress-bar-bg">
-          <div id="cleaner-progress-fill" class="progress-bar-fill"></div>
+          <div id="cleaner-prog-fill" class="progress-bar-fill"></div>
         </div>
       </div>
       <div id="cleaner-msg" class="status-msg"></div>
     </div>
 
-    <div id="tab-nup" class="tool-card" style="display: none;">
+    <div id="tab-nup" class="tool-panel">
       <h2 class="tool-title">4 Pages in 1 Sheet (Print Layout)</h2>
       <p class="tool-desc">Fits 4 lecture slides onto 1 page with large text and minimal white space.</p>
 
-      <div class="upload-container">
-        <p>1. Choose PDF File</p>
-        <input type="file" id="nup-input" accept="application/pdf" onchange="onFileSelected(this, 'nup-file-text', 'nup-btn')" />
-        <div id="nup-file-text" class="file-status"></div>
+      <div class="upload-box">
+        <label for="nup-file">Choose PDF File:</label>
+        <input type="file" id="nup-file" accept="application/pdf" />
+        <div id="nup-info" class="file-details" style="display:none;"></div>
       </div>
 
-      <button id="nup-btn" class="action-btn" disabled onclick="run4In1()">Convert to 4-in-1 & Download</button>
+      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert to 4-in-1 & Download</button>
 
       <div id="nup-progress" class="progress-wrapper">
         <div class="progress-header">
-          <span id="nup-progress-status">Processing...</span>
-          <span id="nup-progress-pct">0%</span>
+          <span id="nup-prog-text">Converting...</span>
+          <span id="nup-prog-pct">0%</span>
         </div>
         <div class="progress-bar-bg">
-          <div id="nup-progress-fill" class="progress-bar-fill"></div>
+          <div id="nup-prog-fill" class="progress-bar-fill"></div>
         </div>
       </div>
       <div id="nup-msg" class="status-msg"></div>
     </div>
 
-    <div id="tab-merge" class="tool-card" style="display: none;">
+    <div id="tab-merge" class="tool-panel">
       <h2 class="tool-title">Merge PDF Files</h2>
       <p class="tool-desc">Combine multiple PDFs into a single document.</p>
 
-      <div class="upload-container">
-        <p>1. Choose Multiple PDFs</p>
-        <input type="file" id="merge-input" multiple accept="application/pdf" onchange="onMultipleFilesSelected(this, 'merge-file-text', 'merge-btn')" />
-        <div id="merge-file-text" class="file-status"></div>
+      <div class="upload-box">
+        <label for="merge-file">Choose Multiple PDFs:</label>
+        <input type="file" id="merge-file" multiple accept="application/pdf" />
+        <div id="merge-info" class="file-details" style="display:none;"></div>
       </div>
 
-      <button id="merge-btn" class="action-btn" disabled onclick="runMerge()">Merge & Download</button>
+      <button id="merge-btn" class="action-btn" onclick="executeMerge()">Merge & Download</button>
 
       <div id="merge-progress" class="progress-wrapper">
         <div class="progress-header">
-          <span id="merge-progress-status">Merging...</span>
-          <span id="merge-progress-pct">0%</span>
+          <span id="merge-prog-text">Merging...</span>
+          <span id="merge-prog-pct">0%</span>
         </div>
         <div class="progress-bar-bg">
-          <div id="merge-progress-fill" class="progress-bar-fill"></div>
+          <div id="merge-prog-fill" class="progress-bar-fill"></div>
         </div>
       </div>
       <div id="merge-msg" class="status-msg"></div>
     </div>
 
-    <div id="tab-img2pdf" class="tool-card" style="display: none;">
+    <div id="tab-img2pdf" class="tool-panel">
       <h2 class="tool-title">Convert Images to PDF</h2>
       <p class="tool-desc">Turn JPG/PNG photos into a single PDF document.</p>
 
-      <div class="upload-container">
-        <p>1. Choose Images</p>
-        <input type="file" id="img-input" multiple accept="image/jpeg, image/png" onchange="onMultipleFilesSelected(this, 'img-file-text', 'img-btn')" />
-        <div id="img-file-text" class="file-status"></div>
+      <div class="upload-box">
+        <label for="img-file">Choose Images (JPG/PNG):</label>
+        <input type="file" id="img-file" multiple accept="image/jpeg, image/png" />
+        <div id="img-info" class="file-details" style="display:none;"></div>
       </div>
 
-      <button id="img-btn" class="action-btn" disabled onclick="runImg2Pdf()">Convert & Download</button>
+      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert & Download</button>
 
       <div id="img-progress" class="progress-wrapper">
         <div class="progress-header">
-          <span id="img-progress-status">Converting...</span>
-          <span id="img-progress-pct">0%</span>
+          <span id="img-prog-text">Converting...</span>
+          <span id="img-prog-pct">0%</span>
         </div>
         <div class="progress-bar-bg">
-          <div id="img-progress-fill" class="progress-bar-fill"></div>
+          <div id="img-prog-fill" class="progress-bar-fill"></div>
         </div>
       </div>
       <div id="img-msg" class="status-msg"></div>
     </div>
 
-    <div id="tab-split" class="tool-card" style="display: none;">
+    <div id="tab-split" class="tool-panel">
       <h2 class="tool-title">Split First Page</h2>
       <p class="tool-desc">Extract the first page of any PDF instantly.</p>
 
-      <div class="upload-container">
-        <p>1. Choose PDF File</p>
-        <input type="file" id="split-input" accept="application/pdf" onchange="onFileSelected(this, 'split-file-text', 'split-btn')" />
-        <div id="split-file-text" class="file-status"></div>
+      <div class="upload-box">
+        <label for="split-file">Choose PDF File:</label>
+        <input type="file" id="split-file" accept="application/pdf" />
+        <div id="split-info" class="file-details" style="display:none;"></div>
       </div>
 
-      <button id="split-btn" class="action-btn" disabled onclick="runSplit()">Extract Page 1 & Download</button>
+      <button id="split-btn" class="action-btn" onclick="executeSplit()">Extract Page 1 & Download</button>
 
       <div id="split-progress" class="progress-wrapper">
         <div class="progress-header">
-          <span id="split-progress-status">Extracting...</span>
-          <span id="split-progress-pct">0%</span>
+          <span id="split-prog-text">Extracting...</span>
+          <span id="split-prog-pct">0%</span>
         </div>
         <div class="progress-bar-bg">
-          <div id="split-progress-fill" class="progress-bar-fill"></div>
+          <div id="split-prog-fill" class="progress-bar-fill"></div>
         </div>
       </div>
       <div id="split-msg" class="status-msg"></div>
@@ -403,96 +396,104 @@
     DocuLoom — 100% Free & Client-Side. No files leave your device.
   </footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
   <script>
-    // Bulletproof Tab Switching
-    function switchTool(targetKey) {
-      var allTools = ['cleaner', 'nup', 'merge', 'img2pdf', 'split'];
-      for (var i = 0; i < allTools.length; i++) {
-        var key = allTools[i];
-        var panel = document.getElementById('tab-' + key);
-        var btn = document.getElementById('btn-tab-' + key);
-        if (panel) {
-          panel.style.display = (key === targetKey) ? 'block' : 'none';
-        }
-        if (btn) {
-          if (key === targetKey) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        }
+    // 1. GUARANTEED TAB SWITCHER (Zero Dependencies)
+    function openTab(tabId, btnElement) {
+      var panels = document.querySelectorAll('.tool-panel');
+      for (var i = 0; i < panels.length; i++) {
+        panels[i].classList.remove('active');
+      }
+      var btns = document.querySelectorAll('.tab-btn');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.remove('active');
+      }
+
+      var targetPanel = document.getElementById(tabId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+      if (btnElement) {
+        btnElement.classList.add('active');
       }
     }
 
-    // Initialize worker safely
+    // Initialize Worker
     try {
       if (window.pdfjsLib) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
       }
-    } catch(err) {
-      console.warn("PDF.js worker setup note:", err);
+    } catch(e) {
+      console.log(e);
     }
 
-    // Direct UI updates when file is selected
-    function onFileSelected(input, textId, btnId) {
-      if (input.files && input.files.length > 0) {
-        var file = input.files[0];
-        var box = document.getElementById(textId);
-        box.style.display = 'block';
-        box.innerHTML = '<strong>Selected:</strong> ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
-        document.getElementById(btnId).disabled = false;
-      }
+    // 2. FILE INPUT LISTENERS
+    function attachFileInput(inputId, infoId) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      input.addEventListener('change', function(e) {
+        var info = document.getElementById(infoId);
+        if (e.target.files && e.target.files.length > 0) {
+          info.style.display = 'block';
+          if (e.target.files.length === 1) {
+            info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
+          } else {
+            info.innerHTML = '<strong>Selected ' + e.target.files.length + ' files:</strong><br>' + 
+              Array.from(e.target.files).map(function(f){ return '• ' + f.name; }).join('<br>');
+          }
+        }
+      });
     }
 
-    function onMultipleFilesSelected(input, textId, btnId) {
-      if (input.files && input.files.length > 0) {
-        var files = Array.from(input.files);
-        var box = document.getElementById(textId);
-        box.style.display = 'block';
-        box.innerHTML = '<strong>Selected ' + files.length + ' file(s):</strong><br>' + files.map(function(f){ return '• ' + f.name; }).join('<br>');
-        document.getElementById(btnId).disabled = false;
-      }
+    attachFileInput('cleaner-file', 'cleaner-info');
+    attachFileInput('nup-file', 'nup-info');
+    attachFileInput('merge-file', 'merge-info');
+    attachFileInput('img-file', 'img-info');
+    attachFileInput('split-file', 'split-info');
+
+    // Progress Helper
+    function setProgress(prefix, text, pct) {
+      var wrap = document.getElementById(prefix + '-progress');
+      var txt = document.getElementById(prefix + '-prog-text');
+      var pctLabel = document.getElementById(prefix + '-prog-pct');
+      var fill = document.getElementById(prefix + '-prog-fill');
+      if (wrap) wrap.style.display = 'block';
+      if (txt) txt.innerText = text;
+      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
+      if (fill) fill.style.width = pct + '%';
     }
 
-    // Update Progress Bar
-    function updateProgress(prefix, text, percentage) {
-      var wrapper = document.getElementById(prefix + '-progress');
-      var statusTxt = document.getElementById(prefix + '-progress-status');
-      var pctTxt = document.getElementById(prefix + '-progress-pct');
-      var fill = document.getElementById(prefix + '-progress-fill');
-
-      wrapper.style.display = 'block';
-      statusTxt.innerText = text;
-      pctTxt.innerText = Math.round(percentage) + '%';
-      fill.style.width = percentage + '%';
-    }
-
-    function downloadBlob(bytes, filename, type) {
+    function triggerDownload(bytes, filename, type) {
       var blob = new Blob([bytes], { type: type });
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = filename;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     }
 
-    // --- 1. CLEAN WATERMARK WITH VISIBLE PROGRESS ---
-    async function runCleanWatermark() {
-      var input = document.getElementById('cleaner-input');
-      var btn = document.getElementById('cleaner-btn');
+    // --- TOOL 1: CLEAN WATERMARK ---
+    async function executeCleanWatermark() {
+      var input = document.getElementById('cleaner-file');
       var msg = document.getElementById('cleaner-msg');
-      if (!input.files || input.files.length === 0) return;
+      var btn = document.getElementById('cleaner-btn');
+
+      if (!input.files || input.files.length === 0) {
+        alert('Please choose a PDF file first!');
+        return;
+      }
 
       var file = input.files[0];
       btn.disabled = true;
       msg.className = 'status-msg';
       msg.innerText = '';
-      updateProgress('cleaner', 'Starting engine & reading document...', 5);
+      setProgress('cleaner', 'Starting PDF engine...', 5);
 
       try {
-        var threshold = parseInt(document.getElementById('threshold-slider').value, 10);
+        var threshold = parseInt(document.getElementById('cleaner-slider').value, 10);
         var fileBytes = await file.arrayBuffer();
         var loadingTask = pdfjsLib.getDocument({ data: fileBytes });
         var pdf = await loadingTask.promise;
@@ -502,8 +503,8 @@
         var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
         for (var pageNum = 1; pageNum <= totalPages; pageNum++) {
-          var pct = Math.round(10 + ((pageNum / totalPages) * 80));
-          updateProgress('cleaner', 'Cleaning page ' + pageNum + ' of ' + totalPages + '...', pct);
+          var pct = Math.round(5 + ((pageNum / totalPages) * 85));
+          setProgress('cleaner', 'Cleaning page ' + pageNum + ' of ' + totalPages + '...', pct);
 
           var page = await pdf.getPage(pageNum);
           var viewport = page.getViewport({ scale: 2.0 });
@@ -526,14 +527,14 @@
             } else if (gray <= darkCap) {
               data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
             } else {
-              var normalized = (gray - darkCap) / (threshold - darkCap);
-              var val = Math.floor(normalized * 255);
+              var norm = (gray - darkCap) / (threshold - darkCap);
+              var val = Math.floor(norm * 255);
               data[i] = val; data[i + 1] = val; data[i + 2] = val;
             }
           }
           ctx.putImageData(imgData, 0, 0);
 
-          var cleanDataUrl = canvas.toDataURL('image/jpeg', 0.94);
+          var cleanDataUrl = canvas.toDataURL('image/jpeg', 0.93);
           var cleanImgBytes = await fetch(cleanDataUrl).then(function(r){ return r.arrayBuffer(); });
           var cleanImg = await outDoc.embedJpg(cleanImgBytes);
 
@@ -551,34 +552,38 @@
           });
         }
 
-        updateProgress('cleaner', 'Compiling and saving clean PDF...', 95);
-        var cleanedPdfBytes = await outDoc.save();
-        downloadBlob(cleanedPdfBytes, 'Cleaned_' + file.name, 'application/pdf');
+        setProgress('cleaner', 'Saving PDF...', 95);
+        var cleanedBytes = await outDoc.save();
+        triggerDownload(cleanedBytes, 'Cleaned_' + file.name, 'application/pdf');
 
-        updateProgress('cleaner', 'Complete!', 100);
+        setProgress('cleaner', 'Done!', 100);
         msg.className = 'status-msg success';
-        msg.innerText = '✅ Cleaned PDF ready and downloaded successfully!';
+        msg.innerText = '✅ Cleaned PDF successfully downloaded!';
       } catch (err) {
         console.error(err);
         msg.className = 'status-msg error';
-        msg.innerText = '❌ Error: Could not clean this PDF.';
+        msg.innerText = '❌ Error processing file: ' + err.message;
       } finally {
         btn.disabled = false;
       }
     }
 
-    // --- 2. 4-IN-1 LAYOUT WITH PROGRESS ---
-    async function run4In1() {
-      var input = document.getElementById('nup-input');
-      var btn = document.getElementById('nup-btn');
+    // --- TOOL 2: 4-IN-1 ---
+    async function execute4In1() {
+      var input = document.getElementById('nup-file');
       var msg = document.getElementById('nup-msg');
-      if (!input.files || input.files.length === 0) return;
+      var btn = document.getElementById('nup-btn');
+
+      if (!input.files || input.files.length === 0) {
+        alert('Please choose a PDF file first!');
+        return;
+      }
 
       var file = input.files[0];
       btn.disabled = true;
       msg.className = 'status-msg';
       msg.innerText = '';
-      updateProgress('nup', 'Loading slides...', 10);
+      setProgress('nup', 'Loading slides...', 10);
 
       try {
         var fileBytes = await file.arrayBuffer();
@@ -606,5 +611,8 @@
         var slotH = (availHeight - gap) / 2;
 
         for (var i = 0; i < totalPages; i += 4) {
-          var pct = Math.round(15 + ((i / totalPages) * 75));
-          updateProgress('nup', 'Arranging shee
+          var pct = Math.round(10 + ((i / totalPages) * 80));
+          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+
+          var sheet = out
+    
