@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DocuLoom — Free Student PDF & Exam Form Tools</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <title>DocuLoom — Free PDF & Image Tools</title>
 
   <style>
     :root {
@@ -17,7 +15,7 @@
       --muted: #94a3b8;
       --border: #334155;
       --accent: #10b981;
-      --radius: 14px;
+      --radius: 12px;
     }
 
     * {
@@ -61,29 +59,37 @@
       margin-top: 0.2rem;
     }
 
+    /* 100% PURE CSS TAB SYSTEM - ZERO JS REQUIRED TO SWITCH */
+    input[type="radio"].tab-toggle {
+      display: none;
+    }
+
     .nav-tabs {
       display: flex;
       justify-content: center;
       gap: 0.5rem;
       margin: 1.25rem 1rem 0;
-      flex-wrap: wrap;
     }
 
-    .tab-btn {
+    .tab-label {
       flex: 1;
-      max-width: 220px;
+      max-width: 200px;
       background: #1e293b;
       border: 1px solid var(--border);
-      padding: 0.75rem 0.9rem;
+      padding: 0.75rem 0.5rem;
       border-radius: 9999px;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--muted);
       cursor: pointer;
+      text-align: center;
+      user-select: none;
       transition: all 0.2s;
     }
 
-    .tab-btn.active {
+    #radio-nup:checked ~ .nav-tabs label[for="radio-nup"],
+    #radio-exam:checked ~ .nav-tabs label[for="radio-exam"],
+    #radio-img:checked ~ .nav-tabs label[for="radio-img"] {
       background: var(--primary);
       color: #ffffff;
       border-color: var(--primary);
@@ -108,7 +114,9 @@
       text-align: center;
     }
 
-    .tool-panel.active {
+    #radio-nup:checked ~ main #panel-nup,
+    #radio-exam:checked ~ main #panel-exam,
+    #radio-img:checked ~ main #panel-img {
       display: block;
     }
 
@@ -220,10 +228,8 @@
       box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
     }
 
-    .action-btn:disabled {
-      background: #475569;
-      box-shadow: none;
-      cursor: not-allowed;
+    .action-btn:active {
+      background: var(--primary-hover);
     }
 
     .progress-box {
@@ -257,7 +263,6 @@
     .status-msg.success { color: var(--accent); }
     .status-msg.error { color: #f87171; }
 
-    /* Viral Share Box */
     .share-card {
       margin-top: 1.5rem;
       background: #1e293b;
@@ -306,14 +311,18 @@
     <div class="tagline">100% Free Client-Side Student & Exam Toolkit</div>
   </header>
 
-  <div class="nav-tabs">
-    <button id="btn-tab-nup" class="tab-btn active" onclick="switchTab('nup')">📄 4-in-1 Print Saver</button>
-    <button id="btn-tab-exam" class="tab-btn" onclick="switchTab('exam')">🪪 Exam Photo/Sign Resizer</button>
-    <button id="btn-tab-img2pdf" class="tab-btn" onclick="switchTab('img2pdf')">🖼️ Images to PDF</button>
-  </div>
+  <input type="radio" name="tab" id="radio-nup" class="tab-toggle" checked>
+  <input type="radio" name="tab" id="radio-exam" class="tab-toggle">
+  <input type="radio" name="tab" id="radio-img" class="tab-toggle">
+
+  <nav class="nav-tabs">
+    <label for="radio-nup" class="tab-label">📄 4-in-1 Print</label>
+    <label for="radio-exam" class="tab-label">🪪 Exam Resizer</label>
+    <label for="radio-img" class="tab-label">🖼️ Image to PDF</label>
+  </nav>
 
   <main>
-    <div id="panel-nup" class="tool-panel active">
+    <div id="panel-nup" class="tool-panel">
       <span class="badge">🔥 Save 75% Printing Cost</span>
       <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
       <p class="tool-desc">Fits 4 lecture slides onto a single sheet in high resolution without blank gaps.</p>
@@ -361,7 +370,7 @@
       <div id="exam-msg" class="status-msg"></div>
     </div>
 
-    <div id="panel-img2pdf" class="tool-panel">
+    <div id="panel-img" class="tool-panel">
       <span class="badge">⚡ High Resolution</span>
       <h2 class="tool-title">Convert Images to PDF</h2>
       <p class="tool-desc">Merge multiple photos, handwritten assignments, or notes into one clean PDF document.</p>
@@ -386,7 +395,7 @@
 
     <div class="share-card">
       <p>🚀 Share DocuLoom with classmates & save xerox costs!</p>
-      <a href="https://api.whatsapp.com/send?text=Hey%21%20Use%20this%20free%20tool%20to%20fit%204%20lecture%20slides%20into%201%20page%20for%20cheap%20printing%20and%20resize%20exam%20photos%3A%20https%3A%2F%2Fchandanlalmallick.github.io%2Fdoculoom%2F" target="_blank" class="share-btn">
+      <a href="https://api.whatsapp.com/send?text=Free%20student%20tool%3A%20Fit%204%20lecture%20slides%20into%201%20page%20for%20cheap%20printing%20and%20resize%20exam%20photos%20under%2050KB%3A%20https%3A%2F%2Fchandanlalmallick.github.io%2Fdoculoom%2F" target="_blank" class="share-btn">
         <span>📲 Share on WhatsApp</span>
       </a>
     </div>
@@ -397,13 +406,29 @@
   </footer>
 
   <script>
-    function switchTab(tabId) {
-      ['nup', 'exam', 'img2pdf'].forEach(function(t) {
-        document.getElementById('panel-' + t).classList.toggle('active', t === tabId);
-        document.getElementById('btn-tab-' + t).classList.toggle('active', t === tabId);
+    // Robust On-Demand Script Loader (Never Blocks UI)
+    function getPdfLib() {
+      return new Promise(function(resolve, reject) {
+        if (window.PDFLib) {
+          resolve(window.PDFLib);
+          return;
+        }
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+        script.onload = function() { resolve(window.PDFLib); };
+        script.onerror = function() {
+          // Backup Mirror
+          var backup = document.createElement('script');
+          backup.src = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+          backup.onload = function() { resolve(window.PDFLib); };
+          backup.onerror = function() { reject(new Error('Unable to load PDF library. Please check your internet connection.')); };
+          document.head.appendChild(backup);
+        };
+        document.head.appendChild(script);
       });
     }
 
+    // Direct Native File Change Listeners
     document.getElementById('nup-file').addEventListener('change', function(e) {
       var info = document.getElementById('nup-info');
       if (e.target.files && e.target.files.length > 0) {
@@ -413,233 +438,5 @@
     });
 
     document.getElementById('exam-file').addEventListener('change', function(e) {
-      var info = document.getElementById('exam-info');
-      if (e.target.files && e.target.files.length > 0) {
-        var f = e.target.files[0];
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected:</strong> ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
-      }
-    });
-
-    document.getElementById('img-file').addEventListener('change', function(e) {
-      var info = document.getElementById('img-info');
-      if (e.target.files && e.target.files.length > 0) {
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected ' + e.target.files.length + ' image(s)</strong>';
-      }
-    });
-
-    function setProgress(prefix, text, pct) {
-      var wrap = document.getElementById(prefix + '-progress');
-      var txt = document.getElementById(prefix + '-prog-text');
-      var pctLabel = document.getElementById(prefix + '-prog-pct');
-      var fill = document.getElementById(prefix + '-prog-fill');
-      if (wrap) wrap.style.display = 'block';
-      if (txt) txt.innerText = text;
-      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
-      if (fill) fill.style.width = pct + '%';
-    }
-
-    function triggerDownload(blob, filename) {
-      var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    // --- 1. 4-IN-1 PRINT ENGINE ---
-    async function execute4In1() {
-      var input = document.getElementById('nup-file');
-      var msg = document.getElementById('nup-msg');
-      var btn = document.getElementById('nup-btn');
-
-      if (!input.files || input.files.length === 0) {
-        alert('Please select a PDF file first!');
-        return;
-      }
-
-      var file = input.files[0];
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('nup', 'Analyzing document...', 10);
-
-      try {
-        var fileBytes = await file.arrayBuffer();
-        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
-        var outDoc = await PDFLib.PDFDocument.create();
-        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-
-        var totalPages = srcDoc.getPageCount();
-        var firstPage = srcDoc.getPage(0);
-        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
-
-        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
-
-        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
-        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
-
-        var margin = 10;
-        var gap = 8;
-        var footerSpace = 16;
-
-        var availWidth = SHEET_WIDTH - (margin * 2);
-        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
-
-        var slotW = (availWidth - gap) / 2;
-        var slotH = (availHeight - gap) / 2;
-
-        for (var i = 0; i < totalPages; i += 4) {
-          var pct = Math.round(10 + ((i / totalPages) * 80));
-          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
-
-          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
-          var batch = embeddedPages.slice(i, i + 4);
-
-          var sample = batch[0];
-          var sampleSize = sample.scale(1);
-          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
-
-          var scaledW = sampleSize.width * scale;
-          var scaledH = sampleSize.height * scale;
-
-          var totalGridW = (scaledW * 2) + gap;
-          var totalGridH = (scaledH * 2) + gap;
-
-          var startX = (SHEET_WIDTH - totalGridW) / 2;
-          var startY = footerSpace + margin + ((availHeight - totalGridH) / 2);
-
-          var gridCoords = [
-            { x: startX,                   y: startY + scaledH + gap },
-            { x: startX + scaledW + gap,    y: startY + scaledH + gap },
-            { x: startX,                   y: startY },
-            { x: startX + scaledW + gap,    y: startY }
-          ];
-
-          batch.forEach(function(p, idx) {
-            var pos = gridCoords[idx];
-            sheet.drawPage(p, {
-              x: pos.x,
-              y: pos.y,
-              xScale: scale,
-              yScale: scale
-            });
-          });
-
-          var brandText = "DocuLoom";
-          var textWidth = font.widthOfTextAtSize(brandText, 8.5);
-          sheet.drawText(brandText, {
-            x: (SHEET_WIDTH - textWidth) / 2,
-            y: 6,
-            size: 8.5,
-            font: font,
-            color: PDFLib.rgb(0.4, 0.4, 0.4)
-          });
-        }
-
-        setProgress('nup', 'Saving 4-in-1 PDF...', 95);
-        var pdfBytes = await outDoc.save();
-        var blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        triggerDownload(blob, 'DocuLoom_4in1_' + file.name);
-
-        setProgress('nup', 'Done!', 100);
-        msg.className = 'status-msg success';
-        msg.innerText = '✅ Converted ' + totalPages + ' pages into ' + Math.ceil(totalPages / 4) + ' printable sheets!';
-      } catch (err) {
-        console.error(err);
-        msg.className = 'status-msg error';
-        msg.innerText = '❌ Error: ' + err.message;
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    // --- 2. EXAM PHOTO / SIGNATURE RESIZER ENGINE ---
-    async function executeExamResize() {
-      var input = document.getElementById('exam-file');
-      var msg = document.getElementById('exam-msg');
-      var preset = document.getElementById('exam-preset').value;
-
-      if (!input.files || input.files.length === 0) {
-        alert('Please select an image file first!');
-        return;
-      }
-
-      var file = input.files[0];
-      msg.className = 'status-msg';
-      msg.innerText = 'Processing image for exam requirements...';
-
-      var maxKB = 50;
-      var targetWidth = 413; // 3.5cm standard at 300 DPI
-      var targetHeight = 531; // 4.5cm standard
-
-      if (preset === 'sign_20') {
-        maxKB = 20;
-        targetWidth = 413;
-        targetHeight = 177;
-      } else if (preset === 'photo_100') {
-        maxKB = 100;
-        targetWidth = 600;
-        targetHeight = 800;
-      } else if (preset === 'custom_200') {
-        maxKB = 200;
-        targetWidth = 800;
-        targetHeight = 1000;
-      }
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var img = new Image();
-        img.onload = function() {
-          var canvas = document.createElement('canvas');
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          var ctx = canvas.getContext('2d');
-
-          // Fill white background for signatures and photos
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, targetWidth, targetHeight);
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-          // Smart compression loop to guarantee file size is strictly under maxKB
-          var quality = 0.92;
-          function compress() {
-            canvas.toBlob(function(blob) {
-              if (blob.size / 1024 > maxKB && quality > 0.15) {
-                quality -= 0.08;
-                compress();
-              } else {
-                triggerDownload(blob, 'ExamReady_' + (preset.includes('sign') ? 'Sign' : 'Photo') + '.jpg');
-                msg.className = 'status-msg success';
-                msg.innerText = '✅ Ready! Output size: ' + (blob.size / 1024).toFixed(1) + ' KB (Compliant under ' + maxKB + ' KB)';
-              }
-            }, 'image/jpeg', quality);
-          }
-          compress();
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // --- 3. IMAGES TO PDF ENGINE ---
-    async function executeImagesToPdf() {
-      var input = document.getElementById('img-file');
-      var msg = document.getElementById('img-msg');
-      var btn = document.getElementById('img-btn');
-
-      if (!input.files || input.files.length === 0) {
-        alert('Please select JPG or PNG image files first!');
-        return;
-      }
-
-      var files = Array.from(input.files);
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('img', 'Processing images...', 10);
-
-      try {
-        var pdfDoc = await PDFLib.PDFDocument.crea
+      var
+        
