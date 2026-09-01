@@ -1,105 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Toolkit — Free browser-based PDF & image editor</title>
-<meta name="description" content="Merge, split, edit, sign, watermark and compress PDFs entirely in your browser. Nothing is uploaded to a server.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%233b5bfd%22/><text x=%2250%22 y=%2266%22 font-size=%2250%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22Arial%22>P</text></svg>">
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocuLoom — Free Client-Side PDF Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.04);
+      --shadow-hover: 0 20px 25px -5px rgba(37,99,235,0.1), 0 8px 10px -6px rgba(37,99,235,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-main);
+    }
+
+    .brand-icon {
+      background: var(--primary);
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+    }
+
+    .badge-privacy {
+      font-size: 0.8rem;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem;
+      flex: 1;
+    }
+
+    .hero {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 3rem;
+    }
+
+    .hero h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #93c5fd;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+    }
+
+    .bg-red { background: #fee2e2; }
+    .bg-blue { background: #dbeafe; }
+    .bg-amber { background: #fef3c7; }
+    .bg-purple { background: #f3e8ff; }
+    .bg-emerald { background: #d1fae5; }
+    .bg-cyan { background: #cffafe; }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .card-action span {
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover .card-action span {
+      transform: translateX(4px);
+    }
+
+    .trust-banner {
+      margin-top: 3.5rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .trust-icon {
+      font-size: 2rem;
+    }
+
+    .trust-text h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .trust-text p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      background: #ffffff;
+      margin-top: auto;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 {
+        font-size: 1.75rem;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .badge-privacy span {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="container">
-    <a href="index.html" class="brand"><span class="brand-mark">P</span> PDF Toolkit</a>
-    <button class="nav-toggle" aria-label="Menu">☰</button>
-    <nav class="nav-links">
-      <a href="organize.html">Organize</a>
-      <a href="split.html">Split</a>
-      <a href="images-to-pdf.html">Images → PDF</a>
-      <a href="pdf-to-images.html">PDF → Images</a>
-      <a href="n-up.html">Multi-page layout</a>
-      <a href="edit.html">Edit &amp; Sign</a>
-      <a href="compress.html">Compress</a>
-    </nav>
-  </div>
-</header>
-
-<main class="page-body">
-  <div class="container">
-
-    <section class="hero">
-      <span class="badge">100% free · works offline once loaded · no account</span>
-      <h1>Edit PDFs and images, right in your browser</h1>
-      <p>Merge, split, reorder, sign, watermark, compress and convert your files without ever uploading them to a server. Everything happens on your own device.</p>
-    </section>
-
-    <div class="tools-grid">
-
-      <a class="tool-card" href="organize.html">
-        <div class="icon">🗂️</div>
-        <h3>Merge &amp; Organize</h3>
-        <p>Combine multiple PDFs, delete, reorder, duplicate, rotate pages, and insert blank or image pages.</p>
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">📄</div>
+        DocuLoom
       </a>
-
-      <a class="tool-card" href="split.html">
-        <div class="icon">✂️</div>
-        <h3>Split PDF</h3>
-        <p>Break a PDF into individual pages or custom page ranges, downloaded as separate files.</p>
-      </a>
-
-      <a class="tool-card" href="images-to-pdf.html">
-        <div class="icon">🖼️</div>
-        <h3>JPG/PNG → PDF</h3>
-        <p>Turn one or more images into a single PDF document, in the order you choose.</p>
-      </a>
-
-      <a class="tool-card" href="pdf-to-images.html">
-        <div class="icon">📸</div>
-        <h3>PDF → JPG/PNG</h3>
-        <p>Export every page of a PDF as a high-quality image file.</p>
-      </a>
-
-      <a class="tool-card" href="n-up.html">
-        <div class="icon">🔳</div>
-        <h3>Multiple pages per sheet</h3>
-        <p>Print-friendly layouts: put 2, 4, 6, 9 or more pages onto a single sheet.</p>
-      </a>
-
-      <a class="tool-card" href="edit.html">
-        <div class="icon">✍️</div>
-        <h3>Edit &amp; Sign</h3>
-        <p>Add text, freehand drawing, highlights, your signature, watermarks, and crop pages.</p>
-      </a>
-
-      <a class="tool-card" href="compress.html">
-        <div class="icon">📦</div>
-        <h3>Compress PDF</h3>
-        <p>Shrink file size for easier sharing and emailing.</p>
-      </a>
-
-    </div>
-
-    <div class="privacy-note">
-      <div>🔒</div>
-      <div>
-        <strong>Your files never leave your device.</strong>
-        Every tool on this site processes your PDFs and images locally in your browser using JavaScript
-        libraries — nothing is uploaded to any server. You can even disconnect from the internet after the
-        page has loaded and everything will keep working.
+      <div class="badge-privacy">
+        🔒 <span>100% Private (No Uploads)</span>
       </div>
     </div>
+  </header>
 
-  </div>
-</main>
+  <main>
+    <div class="hero">
+      <h1>Every tool you need to work with PDFs</h1>
+      <p>Free, fast, and processed entirely inside your browser. Your files never leave your device.</p>
+    </div>
 
-<footer class="site-footer">
-  <div class="container">
-    Built with free, open-source libraries (pdf-lib, pdf.js, JSZip, Signature Pad). Your files are processed locally and never uploaded.
-  </div>
-</footer>
+    <div class="grid">
+      <!-- Edit & Sign -->
+      <a href="edit.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-purple">✍️</div>
+            <h2>Edit & Sign</h2>
+          </div>
+          <p>Add text, draw signatures, insert highlights, watermarks, and crop pages.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
 
-<script src="js/common.js"></script>
+      <!-- Compress PDF -->
+      <a href="compress.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-emerald">🗜️</div>
+            <h2>Compress PDF</h2>
+          </div>
+          <p>Reduce file size quickly while preserving readability and high quality.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+
+      <!-- Merge & Organize -->
+      <a href="organize.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-blue">📑</div>
+            <h2>Merge & Organize</h2>
+          </div>
+          <p>Combine multiple PDFs, rearrange page order, rotate, or remove unwanted pages.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+
+      <!-- Split PDF -->
+      <a href="split.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-amber">✂️</div>
+            <h2>Split PDF</h2>
+          </div>
+          <p>Separate a PDF into single pages or extract specific page ranges easily.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+
+      <!-- JPG/PNG to PDF -->
+      <a href="images-to-pdf.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-red">🖼️</div>
+            <h2>Images to PDF</h2>
+          </div>
+          <p>Convert JPG, PNG, and WebP images into a single, clean PDF file.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+
+      <!-- PDF to Images -->
+      <a href="pdf-to-images.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-cyan">📷</div>
+            <h2>PDF to Images</h2>
+          </div>
+          <p>Export all PDF pages as high-resolution JPG or PNG images instantly.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+
+      <!-- N-Up Layout -->
+      <a href="n-up.html" class="card">
+        <div>
+          <div class="card-top">
+            <div class="icon-box bg-purple">📄</div>
+            <h2>Multi-Page Layout</h2>
+          </div>
+          <p>Print layouts: combine 2, 4, 6, or 9 pages onto a single sheet.</p>
+        </div>
+        <div class="card-action">
+          Open tool <span>→</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="trust-banner">
+      <div class="trust-icon">🛡️</div>
+      <div class="trust-text">
+        <h3>Zero-Server Architecture</h3>
+        <p>All processing is executed on your local CPU via WebAssembly & JavaScript. Documents are never transmitted to any external server.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>DocuLoom © 2026 — 100% Client-Side PDF Toolkit</p>
+  </footer>
+
 </body>
 </html>
