@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ExamLoom — PDF Mock Test Portal</title>
+  <title>ExamLoom — Mobile & Desktop CBT</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
@@ -39,6 +39,7 @@
 
     .hidden { display: none !important; }
 
+    /* Top Bar */
     header {
       height: 54px;
       background: #0f172a;
@@ -72,6 +73,7 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* Setup Container */
     .setup-container {
       max-width: 520px;
       margin: 1.5rem auto;
@@ -138,6 +140,7 @@
     .btn-primary:hover { background: var(--primary-hover); }
     .btn-danger { background: var(--red); color: #fff; width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem; }
 
+    /* Test Split Layout */
     #exam-screen {
       height: 100vh;
       display: flex;
@@ -152,6 +155,7 @@
       overflow: hidden;
     }
 
+    /* PDF Canvas Viewer */
     .pdf-scroll-view {
       background: #334155;
       height: 100%;
@@ -171,6 +175,7 @@
       height: auto;
     }
 
+    /* OMR Sheet Panel */
     .sheet-panel {
       background: var(--surface);
       border-left: 1px solid var(--border);
@@ -251,6 +256,7 @@
       background: #f8fafc;
     }
 
+    /* Result Panel */
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -275,6 +281,7 @@
       color: var(--muted);
     }
 
+    /* Mobile Responsive Layout: Top Half PDF, Bottom Half OMR */
     @media (max-width: 800px) {
       .split-layout {
         grid-template-columns: 1fr;
@@ -299,7 +306,6 @@
         <div class="form-group">
           <label for="exam-type">Select Exam</label>
           <select id="exam-type" onchange="updatePreset()">
-            <option value="SSC">SSC CGL (60 mins, 100 Qs)</option>
             <option value="CSIR">CSIR NET (180 mins, 60 Qs)</option>
             <option value="GATE">GATE (180 mins, 65 Qs)</option>
             <option value="UPSC">UPSC Prelims (120 mins, 100 Qs)</option>
@@ -313,11 +319,11 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
             <label for="test-time">Duration (Mins)</label>
-            <input type="number" id="test-time" min="1" max="360" value="60" required />
+            <input type="number" id="test-time" min="1" max="360" value="180" required />
           </div>
           <div class="form-group">
             <label for="test-count">Questions</label>
-            <input type="number" id="test-count" min="1" max="250" value="100" required />
+            <input type="number" id="test-count" min="1" max="200" value="60" required />
           </div>
         </div>
 
@@ -386,15 +392,15 @@
   </main>
 
   <script>
+    // Set PDF.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
     const PRESETS = {
-      SSC:  { time: 60,  q: 100, name: "SSC CGL" },
-      CSIR: { time: 180, q: 60,  name: "CSIR NET" },
-      GATE: { time: 180, q: 65,  name: "GATE" },
+      CSIR: { time: 180, q: 60, name: "CSIR NET" },
+      GATE: { time: 180, q: 65, name: "GATE" },
       UPSC: { time: 120, q: 100, name: "UPSC Prelims" },
       UGC:  { time: 180, q: 150, name: "UGC NET" },
-      BANK: { time: 60,  q: 100, name: "Banking PO/Clerk" },
+      BANK: { time: 60,  q: 100, name: "Banking CBT" },
       RRB:  { time: 90,  q: 100, name: "Railway RRB" },
       CUSTOM: { time: 60, q: 30, name: "Custom Mock" }
     };
@@ -413,6 +419,7 @@
       }
     }
 
+    // Form submission & Canvas Render
     document.getElementById("setup-form").addEventListener("submit", async function (e) {
       e.preventDefault();
 
@@ -435,11 +442,13 @@
       try {
         const arrayBuffer = await file.arrayBuffer();
         
+        // Show test interface
         document.getElementById("screen-exam-title").textContent = examName;
         renderOMR(totalQs);
         document.getElementById("setup-screen").classList.add("hidden");
         document.getElementById("exam-screen").classList.remove("hidden");
 
+        // Render PDF directly to HTML5 Canvas
         await renderPdfToCanvas(arrayBuffer);
         initClock(totalMins * 60);
       } catch (err) {
@@ -459,6 +468,7 @@
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         
+        // Scale for mobile screens: Render crisp 1.5x resolution
         const initialViewport = page.getViewport({ scale: 1 });
         const screenWidth = Math.min(window.innerWidth, 800) - 24;
         const scale = screenWidth / initialViewport.width;
@@ -504,5 +514,82 @@
           btn.className = "bubble";
           btn.textContent = opt;
           btn.id = `opt-${i}-${opt}`;
-          btn.
-    
+          btn.onclick = () => chooseAnswer(i, opt);
+          bubbles.appendChild(btn);
+        });
+
+        row.appendChild(bubbles);
+        container.appendChild(row);
+      }
+    }
+
+    function chooseAnswer(qNum, option) {
+      const row = document.getElementById(`row-${qNum}`);
+      const isSelected = userAnswers[qNum] === option;
+
+      ["A", "B", "C", "D"].forEach((opt) => {
+        document.getElementById(`opt-${qNum}-${opt}`).classList.remove("active");
+      });
+
+      if (isSelected) {
+        userAnswers[qNum] = null;
+        row.classList.remove("answered");
+      } else {
+        userAnswers[qNum] = option;
+        document.getElementById(`opt-${qNum}-${option}`).classList.add("active");
+        row.classList.add("answered");
+      }
+    }
+
+    function initClock(totalSec) {
+      secondsLeft = totalSec;
+      initialSeconds = totalSec;
+      const display = document.getElementById("clock-display");
+
+      function tick() {
+        const hrs = Math.floor(secondsLeft / 3600);
+        const mins = Math.floor((secondsLeft % 3600) / 60);
+        const secs = secondsLeft % 60;
+
+        display.textContent = 
+          `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval);
+          endTest(true);
+        }
+        secondsLeft--;
+      }
+
+      tick();
+      countdownInterval = setInterval(tick, 1000);
+    }
+
+    function endTest(forced) {
+      if (!forced && !confirm("Do you want to finish and submit the test?")) {
+        return;
+      }
+
+      clearInterval(countdownInterval);
+
+      const total = Object.keys(userAnswers).length;
+      let answered = 0;
+      for (const k in userAnswers) {
+        if (userAnswers[k] !== null) answered++;
+      }
+
+      const elapsed = initialSeconds - Math.max(0, secondsLeft);
+      const minsSpent = Math.floor(elapsed / 60);
+      const secsSpent = elapsed % 60;
+
+      document.getElementById("res-total").textContent = total;
+      document.getElementById("res-attempted").textContent = answered;
+      document.getElementById("res-unattempted").textContent = total - answered;
+      document.getElementById("res-time").textContent = `${minsSpent}m ${secsSpent}s`;
+
+      document.getElementById("exam-screen").classList.add("hidden");
+      document.getElementById("result-screen").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
