@@ -1,515 +1,1192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DocuLoom — PDF & Exam Tools</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamLoom — PDF Mock Test Generator</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<!--
+  EXAMLOOM
+  Single-file GitHub Pages application.
 
-  <style>
-    :root {
-      --primary: #e11d48;
-      --primary-hover: #be123c;
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: #334155;
-      --accent: #10b981;
-      --radius: 12px;
-    }
+  Features:
+  - Local PDF text extraction using PDF.js
+  - Exam pattern templates
+  - Custom exam mode
+  - Question editor
+  - Real-time countdown
+  - Question palette
+  - Mark for review
+  - Automatic submission
+  - Result analysis
+  - LocalStorage resume support
+-->
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
 
-    header {
-      background: #1e293b;
-      border-bottom: 1px solid var(--border);
-      padding: 1.2rem 1rem;
-      text-align: center;
-    }
+:root{
+  --primary:#4f46e5;
+  --primary2:#6366f1;
+  --dark:#111827;
+  --muted:#6b7280;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --green:#16a34a;
+  --red:#dc2626;
+  --orange:#f59e0b;
+  --blue:#2563eb;
+}
 
-    .brand {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--primary);
-      text-decoration: none;
-    }
+body{
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--dark);
+  min-height:100vh;
+}
 
-    .brand span {
-      color: #ffffff;
-    }
+button,input,select,textarea{
+  font:inherit;
+}
 
-    .tagline {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-    }
+button{
+  cursor:pointer;
+}
 
-    /* PURE CSS TABS */
-    input[type="radio"].tab-toggle {
-      display: none;
-    }
+.hidden{
+  display:none!important;
+}
 
-    .nav-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin: 1.25rem 1rem 0;
-    }
+/* HEADER */
 
-    .tab-label {
-      flex: 1;
-      max-width: 200px;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      padding: 0.75rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--muted);
-      cursor: pointer;
-      text-align: center;
-      user-select: none;
-    }
+.header{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:100;
+}
 
-    #radio-nup:checked ~ .nav-tabs label[for="radio-nup"],
-    #radio-exam:checked ~ .nav-tabs label[for="radio-exam"],
-    #radio-img:checked ~ .nav-tabs label[for="radio-img"] {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
-    }
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    main {
-      max-width: 540px;
-      width: 100%;
-      margin: 1.2rem auto;
-      padding: 0 1rem;
-      flex: 1;
-    }
+.logo{
+  font-size:24px;
+  font-weight:900;
+  color:var(--primary);
+}
 
-    .tool-panel {
-      display: none;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.75rem 1.25rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      text-align: center;
-    }
+.logo span{
+  color:#111827;
+}
 
-    #radio-nup:checked ~ main #panel-nup,
-    #radio-exam:checked ~ main #panel-exam,
-    #radio-img:checked ~ main #panel-img {
-      display: block;
-    }
+.badge{
+  background:#eef2ff;
+  color:var(--primary);
+  padding:6px 11px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+}
 
-    .badge {
-      display: inline-block;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      margin-bottom: 0.6rem;
-      text-transform: uppercase;
-    }
+/* GENERAL */
 
-    .tool-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-      margin-bottom: 0.4rem;
-    }
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:35px 20px;
+}
 
-    .tool-desc {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 1.25rem;
-      line-height: 1.4;
-    }
+.card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 8px 30px rgba(15,23,42,.04);
+}
 
-    .upload-box {
-      background: #0f172a;
-      border: 2px dashed #475569;
-      border-radius: var(--radius);
-      padding: 1.5rem 1rem;
-      margin-bottom: 1.25rem;
-      text-align: left;
-    }
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:12px 18px;
+  font-weight:750;
+  transition:.2s;
+}
 
-    .upload-box label {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #e2e8f0;
-      display: block;
-      margin-bottom: 0.6rem;
-    }
+.btn:hover{
+  transform:translateY(-1px);
+}
 
-    input[type="file"] {
-      display: block;
-      width: 100%;
-      font-size: 0.85rem;
-      color: var(--muted);
-      padding: 0.6rem;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-    }
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+}
 
-    .file-details {
-      font-size: 0.82rem;
-      color: var(--accent);
-      margin-top: 0.75rem;
-      padding: 0.6rem;
-      background: rgba(16, 185, 129, 0.1);
-      border-radius: 6px;
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      display: none;
-      word-break: break-all;
-    }
+.btn-primary:hover{
+  background:#4338ca;
+}
 
-    .control-group {
-      margin-bottom: 1.25rem;
-      text-align: left;
-      background: #0f172a;
-      padding: 0.85rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
+.btn-secondary{
+  background:#eef2ff;
+  color:var(--primary);
+}
 
-    .control-group label {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #cbd5e1;
-      display: block;
-      margin-bottom: 0.4rem;
-    }
+.btn-danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
 
-    .control-group select {
-      width: 100%;
-      background: #1e293b;
-      color: #ffffff;
-      border: 1px solid var(--border);
-      padding: 0.6rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      outline: none;
-    }
+.btn-green{
+  background:#dcfce7;
+  color:#166534;
+}
 
-    .action-btn {
-      width: 100%;
-      background: var(--primary);
-      color: #ffffff;
-      border: none;
-      padding: 0.95rem;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: var(--radius);
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
-    }
+.btn-gray{
+  background:#f3f4f6;
+  color:#374151;
+}
 
-    .action-btn:disabled {
-      background: #475569;
-      cursor: not-allowed;
-    }
+/* HOME */
 
-    /* Direct Download Button (Visible after generation) */
-    .direct-download-link {
-      display: none;
-      width: 100%;
-      margin-top: 1rem;
-      background: #059669;
-      color: #ffffff;
-      padding: 0.95rem;
-      font-size: 1rem;
-      font-weight: 700;
-      text-decoration: none;
-      border-radius: var(--radius);
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
+.hero{
+  text-align:center;
+  padding:45px 10px 30px;
+}
 
-    .progress-box {
-      display: none;
-      margin-top: 1.25rem;
-      text-align: left;
-    }
+.hero h1{
+  font-size:clamp(34px,6vw,62px);
+  line-height:1;
+  letter-spacing:-2px;
+}
 
-    .progress-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #334155;
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 0.4rem;
-    }
+.hero h1 span{
+  color:var(--primary);
+}
 
-    .progress-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: var(--primary);
-      transition: width 0.15s ease;
-    }
+.hero p{
+  color:var(--muted);
+  max-width:700px;
+  margin:20px auto;
+  font-size:17px;
+  line-height:1.6;
+}
 
-    .status-msg {
-      margin-top: 1rem;
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
+.upload-box{
+  border:2px dashed #c7d2fe;
+  background:#f8faff;
+  border-radius:18px;
+  padding:42px 20px;
+  text-align:center;
+  margin-bottom:28px;
+  transition:.2s;
+}
 
-    .status-msg.success { color: var(--accent); }
-    .status-msg.error { color: #f87171; }
+.upload-box.drag{
+  background:#eef2ff;
+  border-color:var(--primary);
+}
 
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: #1e293b;
-      margin-top: auto;
-    }
-  </style>
+.upload-icon{
+  font-size:46px;
+  margin-bottom:10px;
+}
+
+.upload-box h2{
+  margin-bottom:7px;
+}
+
+.upload-box p{
+  color:var(--muted);
+  margin-bottom:18px;
+}
+
+#fileInput{
+  display:none;
+}
+
+.file-info{
+  margin-top:15px;
+  font-size:14px;
+  color:var(--green);
+  font-weight:700;
+}
+
+.progress{
+  width:100%;
+  height:8px;
+  background:#e5e7eb;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:18px;
+}
+
+.progress-bar{
+  height:100%;
+  width:0%;
+  background:var(--primary);
+  transition:.3s;
+}
+
+/* EXAMS */
+
+.section-title{
+  margin:30px 0 15px;
+}
+
+.section-title h2{
+  font-size:25px;
+}
+
+.section-title p{
+  color:var(--muted);
+  margin-top:5px;
+}
+
+.exam-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+.exam-card{
+  border:2px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  background:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.exam-card:hover{
+  border-color:#a5b4fc;
+  transform:translateY(-2px);
+}
+
+.exam-card.selected{
+  border-color:var(--primary);
+  background:#f5f3ff;
+}
+
+.exam-icon{
+  font-size:30px;
+}
+
+.exam-card h3{
+  margin:10px 0 5px;
+}
+
+.exam-card p{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+/* SETUP */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.field label{
+  display:block;
+  font-size:13px;
+  font-weight:750;
+  margin-bottom:7px;
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:11px 12px;
+  outline:none;
+  background:#fff;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px #eef2ff;
+}
+
+.setup-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:22px;
+}
+
+/* EDITOR */
+
+.editor-item{
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:18px;
+  margin-bottom:15px;
+  background:#fff;
+}
+
+.editor-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.option-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.answer-select{
+  margin-top:10px;
+}
+
+/* EXAM */
+
+.exam-page{
+  min-height:calc(100vh - 65px);
+}
+
+.exam-header{
+  background:#111827;
+  color:white;
+  position:sticky;
+  top:65px;
+  z-index:50;
+}
+
+.exam-header-inner{
+  max-width:1400px;
+  margin:auto;
+  padding:12px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.exam-name{
+  font-weight:800;
+}
+
+.timer{
+  background:#fff;
+  color:#111827;
+  padding:8px 15px;
+  border-radius:10px;
+  font-weight:900;
+  min-width:100px;
+  text-align:center;
+}
+
+.timer.warning{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.timer.danger{
+  background:#fee2e2;
+  color:#991b1b;
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  50%{transform:scale(1.04)}
+}
+
+.exam-layout{
+  max-width:1400px;
+  margin:auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:1fr 300px;
+  gap:20px;
+}
+
+.question-card{
+  min-height:520px;
+}
+
+.question-number{
+  color:var(--primary);
+  font-weight:800;
+  margin-bottom:15px;
+}
+
+.question-text{
+  font-size:20px;
+  line-height:1.6;
+  margin-bottom:25px;
+  white-space:pre-wrap;
+}
+
+.options{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.option{
+  border:2px solid var(--border);
+  padding:15px;
+  border-radius:12px;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.option:hover{
+  border-color:#a5b4fc;
+}
+
+.option.selected{
+  border-color:var(--primary);
+  background:#eef2ff;
+}
+
+.option-letter{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#f3f4f6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  flex:none;
+}
+
+.option.selected .option-letter{
+  background:var(--primary);
+  color:#fff;
+}
+
+.exam-buttons{
+  display:flex;
+  gap:10px;
+  margin-top:30px;
+  flex-wrap:wrap;
+}
+
+.palette{
+  height:max-content;
+  position:sticky;
+  top:130px;
+}
+
+.palette h3{
+  margin-bottom:15px;
+}
+
+.legend{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:18px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.legend div{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:4px;
+  display:inline-block;
+}
+
+.palette-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+}
+
+.pal{
+  height:38px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:#f9fafb;
+  font-weight:700;
+}
+
+.pal.current{
+  outline:3px solid #c7d2fe;
+}
+
+.pal.answered{
+  background:#dcfce7;
+  color:#166534;
+  border-color:#86efac;
+}
+
+.pal.review{
+  background:#fef3c7;
+  color:#92400e;
+  border-color:#fcd34d;
+}
+
+.pal.answered-review{
+  background:#ddd6fe;
+  color:#5b21b6;
+  border-color:#a78bfa;
+}
+
+/* RESULTS */
+
+.result-hero{
+  text-align:center;
+  padding:30px 10px;
+}
+
+.score-circle{
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  margin:20px auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#eef2ff;
+  border:10px solid #c7d2fe;
+}
+
+.score-circle strong{
+  font-size:34px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+
+.stat{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:20px;
+  text-align:center;
+}
+
+.stat strong{
+  display:block;
+  font-size:27px;
+  margin-bottom:5px;
+}
+
+.stat span{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.analysis{
+  margin-top:20px;
+}
+
+.result-question{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:10px;
+}
+
+.correct{
+  border-left:5px solid var(--green);
+}
+
+.wrong{
+  border-left:5px solid var(--red);
+}
+
+.unattempted{
+  border-left:5px solid var(--orange);
+}
+
+.small{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.notice{
+  padding:13px 15px;
+  border-radius:10px;
+  background:#fff7ed;
+  color:#9a3412;
+  margin:15px 0;
+  font-size:13px;
+}
+
+.success-notice{
+  background:#ecfdf5;
+  color:#166534;
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:500;
+}
+
+.modal-box{
+  background:#fff;
+  border-radius:18px;
+  max-width:430px;
+  width:100%;
+  padding:25px;
+}
+
+.modal-box h2{
+  margin-bottom:10px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:22px;
+}
+
+/* TOAST */
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#111827;
+  color:#fff;
+  padding:12px 18px;
+  border-radius:10px;
+  z-index:1000;
+  font-size:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+  .exam-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .form-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .exam-layout{
+    grid-template-columns:1fr;
+  }
+
+  .palette{
+    position:static;
+  }
+
+  .palette-grid{
+    grid-template-columns:repeat(10,1fr);
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:600px){
+  .container{
+    padding:20px 12px;
+  }
+
+  .hero{
+    padding:30px 5px 20px;
+  }
+
+  .exam-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .option-grid{
+    grid-template-columns:1fr;
+  }
+
+  .question-text{
+    font-size:17px;
+  }
+
+  .exam-layout{
+    padding:12px;
+  }
+
+  .palette-grid{
+    grid-template-columns:repeat(8,1fr);
+  }
+
+  .exam-header-inner{
+    padding:10px 12px;
+  }
+
+  .exam-name{
+    max-width:45%;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .setup-actions{
+    justify-content:stretch;
+  }
+
+  .setup-actions .btn{
+    flex:1;
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <header>
-    <a href="index.html" class="brand">Docu<span>Loom</span></a>
-    <div class="tagline">100% Free Client-Side Student & Exam Toolkit</div>
-  </header>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">Exam<span>Loom</span></div>
+    <div class="badge">PDF → MOCK TEST</div>
+  </div>
+</header>
 
-  <input type="radio" name="tab" id="radio-nup" class="tab-toggle" checked>
-  <input type="radio" name="tab" id="radio-exam" class="tab-toggle">
-  <input type="radio" name="tab" id="radio-img" class="tab-toggle">
+<!-- HOME -->
 
-  <nav class="nav-tabs">
-    <label for="radio-nup" class="tab-label">📄 4-in-1 Print</label>
-    <label for="radio-exam" class="tab-label">🪪 Exam Resizer</label>
-    <label for="radio-img" class="tab-label">🖼️ Image to PDF</label>
-  </nav>
+<main id="homePage" class="container">
 
-  <main>
-    <div id="panel-nup" class="tool-panel">
-      <span class="badge">🔥 Save 75% Printing Cost</span>
-      <h2 class="tool-title">4 Pages in 1 (Print Layout)</h2>
-      <p class="tool-desc">Fits 4 lecture slides onto a single sheet in high resolution without blank gaps.</p>
+  <section class="hero">
+    <h1>Turn Any PDF Into a <span>Real Mock Test</span></h1>
+    <p>
+      Upload a question paper, choose your exam pattern, set your time
+      and practice inside a professional computer-based test interface.
+    </p>
+  </section>
 
-      <div class="upload-box">
-        <label for="nup-file">Select PDF File:</label>
-        <input type="file" id="nup-file" accept="application/pdf" />
-        <div id="nup-info" class="file-details"></div>
+  <section class="card">
+
+    <div
+      class="upload-box"
+      id="uploadBox"
+      onclick="document.getElementById('fileInput').click()"
+    >
+      <div class="upload-icon">📄</div>
+      <h2>Upload Question Paper PDF</h2>
+      <p>Click here or drag and drop your PDF</p>
+      <button class="btn btn-primary" type="button">
+        Choose PDF
+      </button>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept="application/pdf"
+      >
+
+      <div id="fileInfo" class="file-info"></div>
+
+      <div id="progressWrap" class="progress hidden">
+        <div id="progressBar" class="progress-bar"></div>
       </div>
-
-      <button id="nup-btn" class="action-btn" onclick="execute4In1()">Convert & Save PDF</button>
-      <a id="nup-direct-btn" class="direct-download-link" download="DocuLoom_4in1.pdf">📥 Tap Here to Download PDF</a>
-
-      <div id="nup-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
-          <span id="nup-prog-text">Converting...</span>
-          <span id="nup-prog-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg"><div id="nup-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="nup-msg" class="status-msg"></div>
     </div>
 
-    <div id="panel-exam" class="tool-panel">
-      <span class="badge">🎯 CSIR NET / UPSC / SSC / GATE Ready</span>
-      <h2 class="tool-title">Exam Photo & Sign Resizer</h2>
-      <p class="tool-desc">Compresses photos & signatures to exact dimensions and strict file size limits (e.g. Under 50 KB).</p>
-
-      <div class="upload-box">
-        <label for="exam-file">Select Passport Photo or Signature Image:</label>
-        <input type="file" id="exam-file" accept="image/jpeg, image/png, image/jpg" />
-        <div id="exam-info" class="file-details"></div>
-      </div>
-
-      <div class="control-group">
-        <label>Exam Preset / Max Size Requirement:</label>
-        <select id="exam-preset">
-          <option value="photo_50">Passport Photo (Max 50 KB, 3.5cm x 4.5cm)</option>
-          <option value="sign_20">Signature Image (Max 20 KB, 3.5cm x 1.5cm)</option>
-          <option value="photo_100">Photo / Certificate (Max 100 KB)</option>
-          <option value="custom_200">Form Document (Max 200 KB)</option>
-        </select>
-      </div>
-
-      <button id="exam-btn" class="action-btn" onclick="executeExamResize()">Resize & Save Image</button>
-      <a id="exam-direct-btn" class="direct-download-link" download="ExamReady_Image.jpg">📥 Tap Here to Download Image</a>
-      <div id="exam-msg" class="status-msg"></div>
+    <div class="section-title">
+      <h2>Choose Exam Pattern</h2>
+      <p>Select the style you want your mock test to follow.</p>
     </div>
 
-    <div id="panel-img" class="tool-panel">
-      <span class="badge">⚡ High Resolution</span>
-      <h2 class="tool-title">Convert Images to PDF</h2>
-      <p class="tool-desc">Merge multiple photos, handwritten assignments, or notes into one clean PDF document.</p>
+    <div class="exam-grid" id="examGrid"></div>
 
-      <div class="upload-box">
-        <label for="img-file">Select Image(s) (JPG/PNG):</label>
-        <input type="file" id="img-file" multiple accept="image/jpeg, image/png" />
-        <div id="img-info" class="file-details"></div>
-      </div>
+  </section>
 
-      <button id="img-btn" class="action-btn" onclick="executeImagesToPdf()">Convert to PDF & Save</button>
-      <a id="img-direct-btn" class="direct-download-link" download="DocuLoom_Images.pdf">📥 Tap Here to Download PDF</a>
+</main>
 
-      <div id="img-progress" class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
-          <span id="img-prog-text">Converting...</span>
-          <span id="img-prog-pct">0%</span>
-        </div>
-        <div class="progress-bar-bg"><div id="img-prog-fill" class="progress-bar-fill"></div></div>
-      </div>
-      <div id="img-msg" class="status-msg"></div>
+<!-- SETUP -->
+
+<main id="setupPage" class="container hidden">
+
+  <div class="card">
+
+    <div class="section-title">
+      <h2>⚙️ Test Setup</h2>
+      <p id="setupDescription"></p>
     </div>
-  </main>
 
-  <footer>
-    DocuLoom — 100% Free & Client-Side. Files never leave your browser.
-  </footer>
+    <div class="notice">
+      Exam patterns are configurable templates. Always verify the latest
+      official notification before using this as an exact exam simulation.
+    </div>
 
-  <script>
-    // File Selection Listeners
-    document.getElementById('nup-file').addEventListener('change', function(e) {
-      var info = document.getElementById('nup-info');
-      if (e.target.files && e.target.files.length > 0) {
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected:</strong> ' + e.target.files[0].name;
-      }
-    });
+    <div class="form-grid">
 
-    document.getElementById('exam-file').addEventListener('change', function(e) {
-      var info = document.getElementById('exam-info');
-      if (e.target.files && e.target.files.length > 0) {
-        var f = e.target.files[0];
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected:</strong> ' + f.name + ' (' + (f.size / 1024).toFixed(1) + ' KB)';
-      }
-    });
+      <div class="field">
+        <label>Exam Name</label>
+        <input id="examNameInput">
+      </div>
 
-    document.getElementById('img-file').addEventListener('change', function(e) {
-      var info = document.getElementById('img-info');
-      if (e.target.files && e.target.files.length > 0) {
-        info.style.display = 'block';
-        info.innerHTML = '<strong>Selected ' + e.target.files.length + ' image(s)</strong>';
-      }
-    });
+      <div class="field">
+        <label>Duration (minutes)</label>
+        <input id="durationInput" type="number" min="1">
+      </div>
 
-    function setProgress(prefix, text, pct) {
-      var wrap = document.getElementById(prefix + '-progress');
-      var txt = document.getElementById(prefix + '-prog-text');
-      var pctLabel = document.getElementById(prefix + '-prog-pct');
-      var fill = document.getElementById(prefix + '-prog-fill');
-      if (wrap) wrap.style.display = 'block';
-      if (txt) txt.innerText = text;
-      if (pctLabel) pctLabel.innerText = Math.round(pct) + '%';
-      if (fill) fill.style.width = pct + '%';
-    }
+      <div class="field">
+        <label>Number of Questions</label>
+        <input id="questionCountInput" type="number" min="1">
+      </div>
 
-    // BULLETPROOF MOBILE DOWNLOAD ENGINE (Auto-Triggers + Shows Direct Download Button)
-    function deliverFile(blob, filename, directBtnId) {
-      var url = URL.createObjectURL(blob);
-      
-      // 1. Configure Persistent Direct Download Button on Screen
-      var directBtn = document.getElementById(directBtnId);
-      if (directBtn) {
-        directBtn.href = url;
-        directBtn.download = filename;
-        directBtn.style.display = 'block';
-      }
+      <div class="field">
+        <label>Marks Per Question</label>
+        <input id="marksInput" type="number" step="0.01" min="0">
+      </div>
 
-      // 2. Trigger Auto-Download
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Delay removal so mobile download managers never lose the file buffer
-      setTimeout(function() {
-        document.body.removeChild(a);
-      }, 3000);
-    }
+      <div class="field">
+        <label>Negative Marks Per Wrong Answer</label>
+        <input id="negativeInput" type="number" step="0.01" min="0">
+      </div>
 
-    // --- 1. 4-IN-1 PRINT ENGINE ---
-    async function execute4In1() {
-      var input = document.getElementById('nup-file');
-      var msg = document.getElementById('nup-msg');
-      var btn = document.getElementById('nup-btn');
-      document.getElementById('nup-direct-btn').style.display = 'none';
+      <div class="field">
+        <label>Sections</label>
+        <input id="sectionsInput">
+      </div>
 
-      if (!input.files || input.files.length === 0) {
-        alert('Please tap "Choose File" and select a PDF first!');
-        return;
-      }
+    </div>
 
-      var file = input.files[0];
-      btn.disabled = true;
-      msg.className = 'status-msg';
-      msg.innerText = '';
-      setProgress('nup', 'Analyzing document...', 10);
+    <div class="setup-actions">
+      <button class="btn btn-gray" onclick="showHome()">← Back</button>
+      <button class="btn btn-primary" onclick="goToEditor()">Continue →</button>
+    </div>
 
-      try {
-        var fileBytes = await file.arrayBuffer();
-        var srcDoc = await PDFLib.PDFDocument.load(fileBytes);
-        var outDoc = await PDFLib.PDFDocument.create();
-        var font = await outDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  </div>
+</main>
 
-        var totalPages = srcDoc.getPageCount();
-        var firstPage = srcDoc.getPage(0);
-        var isLandscape = firstPage.getWidth() >= firstPage.getHeight();
+<!-- EDITOR -->
 
-        var embeddedPages = await outDoc.embedPdf(srcDoc, srcDoc.getPageIndices());
+<main id="editorPage" class="container hidden">
 
-        var SHEET_WIDTH = isLandscape ? 841.89 : 595.28;
-        var SHEET_HEIGHT = isLandscape ? 595.28 : 841.89;
+  <div class="card">
 
-        var margin = 10;
-        var gap = 8;
-        var footerSpace = 16;
+    <div class="section-title">
+      <h2>📝 Review Questions</h2>
+      <p>
+        Check the questions extracted from your PDF before starting.
+        You can edit them if the PDF parser missed something.
+      </p>
+    </div>
 
-        var availWidth = SHEET_WIDTH - (margin * 2);
-        var availHeight = SHEET_HEIGHT - (margin * 2) - footerSpace;
+    <div id="editorNotice"></div>
 
-        var slotW = (availWidth - gap) / 2;
-        var slotH = (availHeight - gap) / 2;
+    <div id="editorList"></div>
 
-        for (var i = 0; i < totalPages; i += 4) {
-          var pct = Math.round(10 + ((i / totalPages) * 80));
-          setProgress('nup', 'Arranging sheet ' + Math.ceil((i + 1) / 4) + ' of ' + Math.ceil(totalPages / 4) + '...', pct);
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+      <button class="btn btn-secondary" onclick="addQuestion()">
+        + Add Question
+      </button>
 
-          var sheet = outDoc.addPage([SHEET_WIDTH, SHEET_HEIGHT]);
-          var batch = embeddedPages.slice(i, i + 4);
+      <button class="btn btn-gray" onclick="showSetup()">
+        ← Back
+      </button>
 
-          var sample = batch[0];
-          var sampleSize = sample.scale(1);
-          var scale = Math.min(slotW / sampleSize.width, slotH / sampleSize.height);
+      <button class="btn btn-primary" onclick="startExam()">
+        🚀 Start Mock Test
+      </button>
+    </div>
 
-          var scaledW = sampleSize.width * scale;
-          var scaledH = sampleSize.height * scale;
+  </div>
+</main>
 
-          var totalGridW = (scaledW * 2) + gap;
-          var totalGridH = (scaledH * 2) + gap;
+<!-- EXAM -->
 
-          var
-    
+<main id="examPage" class="exam-page hidden">
+
+  <div class="exam-header">
+    <div class="exam-header-inner">
+      <div class="exam-name" id="examHeaderName">Mock Test</div>
+      <div id="sectionHeader"></div>
+      <div class="timer" id="timer">00:00:00</div>
+    </div>
+  </div>
+
+  <div class="exam-layout">
+
+    <section class="card question-card">
+
+      <div class="question-number" id="questionNumber">
+        Question 1
+      </div>
+
+      <div class="question-text" id="questionText"></div>
+
+      <div class="options" id="options"></div>
+
+      <div class="exam-buttons">
+        <button class="btn btn-gray" onclick="previousQuestion()">
+          ← Previous
+        </button>
+
+        <button class="btn btn-secondary" onclick="clearAnswer()">
+          Clear Response
+        </button>
+
+        <button class="btn btn-secondary" onclick="toggleReview()">
+          ⚑ Mark for Review
+        </button>
+
+        <button class="btn btn-primary" onclick="nextQuestion()">
+          Save & Next →
+        </button>
+      </div>
+
+    </section>
+
+    <aside class="card palette">
+
+      <h3>Question Palette</h3>
+
+      <div class="legend">
+        <div><span class="dot" style="background:#dcfce7"></span> Answered</div>
+        <div><span class="dot" style="background:#fef3c7"></span> Review</div>
+        <div><span class="dot" style="background:#ddd6fe"></span> Ans + Review</div>
+        <div><span class="dot" style="background:#f3f4f6"></span> Not Answered</div>
+      </div>
+
+      <div id="paletteGrid" class="palette-grid"></div>
+
+      <button
+        class="btn btn-danger"
+        style="width:100%;margin-top:20px"
+        onclick="confirmSubmit()"
+      >
+        Submit Test
+      </button>
+
+    </aside>
+
+  </div>
+</main>
+
+<!-- RESULTS -->
+
+<main id="resultPage" class="container hidden">
+
+  <div class="card">
+
+    <div class="result-hero">
+      <h1>🎯 Test Completed</h1>
+      <p id="resultExamName" class="small"></p>
+
+      <div class="score-circle">
+        <strong id="scoreValue">—</strong>
+        <span>Score</span>
+      </div>
+
+      <div id="answerKeyMessage"></div>
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <strong id="totalStat">0</strong>
+        <span>Total Questions</span>
+      </div>
+
+      <div class="stat">
+        <strong id="attemptedStat">0</strong>
+        <span>Attempted</span>
+      </div>
+
+      <div class="stat">
+        <strong id="unattemptedStat">0</strong>
+        <span>Not Attempted</span>
+      </div>
+
+      <div class="stat">
+        <strong id="correctStat">—</strong>
+        <span>Correct</span>
+      </div>
+
+      <div class="stat">
+        <strong id="wrongStat">—</strong>
+        <span>Wrong</span>
+      </div>
+
+      <div class="stat">
+        <strong id="accuracyStat">—</strong>
+        <span>Accuracy</span>
+      </div>
+
+      <div class="stat">
+        <strong id="timeStat">—</strong>
+        <span>Time Used</span>
+      </div>
+
+      <div class="stat">
+        <strong id="reviewStat">0</strong>
+        <span>Marked Review</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card analysis">
+
+    <div class="section-title">
+      <h2>📊 Question Analysis</h2>
+    </div>
+
+    <div id="resultQuestions"></div>
+
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="restartTest()">
+      🔄 Restart Test
+    </button>
+
+    <button class="btn btn-secondary" onclick="showHome()">
+      🏠 New PDF
+    </button>
+  </div>
+
+</main>
+
+<!-- CONFIRM MODAL -->
+
+<div id="confirmModal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Submit Test?</h2>
+    <p id="confirmText"></p>
+
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal()">
+        Cancel
+      </button>
+
+      <button class="btn btn-danger" onclick="submitTest(false)">
+        Submit
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ============================================================
+   CONFIGURATION
+============================================================ */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const EXAMS = {
+
+  SSC: {
+    icon:"🇮🇳",
+    title:"SSC",
+    description:"SSC-style computer based test template",
+    duration:60,
+    questions:100,
+    marks:2,
+    negative:.50,
+    sections:"General Intelligence,General Awareness,Quantitative Aptitude,English"
+  },
+
+  UPSC: {
+    icon:"🏛️",
+    title:"UPSC",
+    description:"UPSC-style configurable practice template",
+    duration:120,
+    questions:100,
+    marks:2,
+    negative:.66,
+    sections:"General Studies"
+  },
+
+  UGC: {
+    icon:"🎓",
+    title:"UGC NET",
+    description:"UGC NET-style practice template",
+    duration:180,
+    questions:150,
+    marks:2,
+    negative:0,
+    sections:"Paper 1,Paper 2"
+  },
+
+  CSIR: {
+    icon:"🔬",
+    title:"CSIR NET",
+    description:"CSIR NET-style configurable practice template",
+    duration:180,
+    questions:75,
+    marks:4,
+    negative:1,
+    sections:"Part A,Part B,Part C"
+  },
+
+  BANKING: {
+    icon:"🏦",
+    title:"Banking",
+    description:"Banking exam-style CBT template",
+    duration:60,
+    questions:100,
+    marks:1,
+    negative:.25,
+    sections:"Reasoning,Quantitative Aptitude,English"
+  },
+
+  RAILWAY: {
+    icon:"🚆",
+    title:"Railway",
+    description:"Railway CBT-style practice template",
+    duration:90,
+    questions:100,
+    marks:1,
+    negative:.33,
+    sections:"Mathematics,General Intelligence,General Science,General Awareness"
+  },
+
+  NEET: {
+    icon:"🩺",
+    title:"NEET",
+    descript
