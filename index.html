@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ExamLoom — Mock Test System</title>
+  <title>ExamLoom — Mobile & Desktop CBT</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
   <style>
     :root {
       --primary: #4f46e5;
@@ -38,36 +41,42 @@
 
     /* Top Bar */
     header {
-      height: 56px;
+      height: 54px;
       background: #0f172a;
       color: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 1.25rem;
-      border-bottom: 1px solid #1e293b;
+      padding: 0 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: #818cf8;
+      max-width: 40%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .timer-badge {
       background: var(--red-bg);
       color: var(--red);
       font-weight: 800;
-      padding: 0.3rem 0.75rem;
+      padding: 0.25rem 0.6rem;
       border-radius: 6px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-variant-numeric: tabular-nums;
     }
 
     /* Setup Container */
     .setup-container {
-      max-width: 580px;
-      margin: 2.5rem auto;
+      max-width: 520px;
+      margin: 1.5rem auto;
       padding: 0 1rem;
       width: 100%;
     }
@@ -76,12 +85,12 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1.75rem;
+      padding: 1.5rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .setup-card h1 {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       margin-bottom: 0.25rem;
     }
 
@@ -92,39 +101,25 @@
     }
 
     .form-group {
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
     }
 
     label {
-      font-size: 0.85rem;
-      font-weight: 600;
+      font-size: 0.8rem;
+      font-weight: 700;
       color: var(--text);
     }
 
-    select, input[type="number"] {
+    select, input[type="number"], input[type="file"] {
       width: 100%;
       padding: 0.65rem 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
       font-size: 0.95rem;
       background: #fff;
-    }
-
-    /* Standard Reliable Native File Input */
-    .file-input-wrapper {
-      background: #f1f5f9;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      padding: 0.75rem;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      width: 100%;
-      font-size: 0.9rem;
-      color: var(--text);
     }
 
     .btn {
@@ -133,8 +128,8 @@
       justify-content: center;
       padding: 0.7rem 1.25rem;
       font-size: 0.95rem;
-      font-weight: 600;
-      border-radius: 6px;
+      font-weight: 700;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       width: 100%;
@@ -143,39 +138,44 @@
 
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
-    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-danger { background: var(--red); color: #fff; width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    .btn-danger { background: var(--red); color: #fff; width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem; }
 
     /* Test Split Layout */
     #exam-screen {
       height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     .split-layout {
       display: grid;
       grid-template-columns: 1fr 340px;
-      height: calc(100vh - 56px);
+      height: calc(100vh - 54px);
       overflow: hidden;
     }
 
-    .pdf-area {
+    /* PDF Canvas Viewer */
+    .pdf-scroll-view {
       background: #334155;
       height: 100%;
-      width: 100%;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 12px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: 12px;
     }
 
-    .pdf-area embed, .pdf-area object {
-      width: 100%;
-      height: 100%;
-      border: none;
+    .pdf-page-canvas {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      background: white;
+      max-width: 100%;
+      height: auto;
     }
 
-    /* OMR Sheet Sidebar */
+    /* OMR Sheet Panel */
     .sheet-panel {
       background: var(--surface);
       border-left: 1px solid var(--border);
@@ -188,8 +188,8 @@
       padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--border);
       background: #f8fafc;
-      font-size: 0.85rem;
-      font-weight: 700;
+      font-size: 0.8rem;
+      font-weight: 800;
       text-transform: uppercase;
       color: var(--muted);
     }
@@ -197,7 +197,7 @@
     .sheet-body {
       flex: 1;
       overflow-y: auto;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
@@ -207,7 +207,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.4rem 0.6rem;
+      padding: 0.45rem 0.6rem;
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -244,16 +244,19 @@
       user-select: none;
     }
 
-    .bubble:hover { border-color: var(--primary); }
-    .bubble.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .bubble.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
 
     .sheet-footer {
-      padding: 0.75rem 1rem;
+      padding: 0.75rem;
       border-top: 1px solid var(--border);
       background: #f8fafc;
     }
 
-    /* Results */
+    /* Result Panel */
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -263,25 +266,30 @@
 
     .stat-card {
       background: #f1f5f9;
-      padding: 0.9rem;
+      padding: 0.85rem;
       border-radius: 6px;
       text-align: center;
     }
 
     .stat-card strong {
       display: block;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
     }
 
     .stat-card span {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--muted);
     }
 
+    /* Mobile Responsive Layout: Top Half PDF, Bottom Half OMR */
     @media (max-width: 800px) {
       .split-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: 50% 50%;
+        grid-template-rows: 55% 45%;
+      }
+      .sheet-panel {
+        border-left: none;
+        border-top: 2px solid var(--border);
       }
     }
   </style>
@@ -290,9 +298,9 @@
 
   <main id="setup-screen" class="setup-container">
     <div class="setup-card">
-      <div class="brand" style="margin-bottom: 0.5rem;">ExamLoom</div>
+      <div class="brand" style="margin-bottom: 0.4rem;">ExamLoom</div>
       <h1>Mock Test Setup</h1>
-      <p>Select your exam template, check total time, and attach your PDF.</p>
+      <p>Choose your exam, duration, and PDF paper.</p>
 
       <form id="setup-form">
         <div class="form-group">
@@ -302,7 +310,7 @@
             <option value="GATE">GATE (180 mins, 65 Qs)</option>
             <option value="UPSC">UPSC Prelims (120 mins, 100 Qs)</option>
             <option value="UGC">UGC NET (180 mins, 150 Qs)</option>
-            <option value="BANK">Banking CBT (60 mins, 100 Qs)</option>
+            <option value="BANK">Banking PO/Clerk (60 mins, 100 Qs)</option>
             <option value="RRB">Railway RRB (90 mins, 100 Qs)</option>
             <option value="CUSTOM">Custom Setup</option>
           </select>
@@ -310,20 +318,18 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
-            <label for="test-time">Duration (Minutes)</label>
+            <label for="test-time">Duration (Mins)</label>
             <input type="number" id="test-time" min="1" max="360" value="180" required />
           </div>
           <div class="form-group">
-            <label for="test-count">Total Questions</label>
+            <label for="test-count">Questions</label>
             <input type="number" id="test-count" min="1" max="200" value="60" required />
           </div>
         </div>
 
-        <div class="form-group" style="margin-top: 0.25rem;">
-          <label for="file-chooser">Upload Question Paper (PDF)</label>
-          <div class="file-input-wrapper">
-            <input type="file" id="file-chooser" accept="application/pdf,.pdf" required />
-          </div>
+        <div class="form-group">
+          <label for="file-chooser">Upload PDF Paper</label>
+          <input type="file" id="file-chooser" accept="application/pdf,.pdf" required />
         </div>
 
         <button type="submit" class="btn btn-primary" id="start-btn" style="margin-top: 0.5rem;">
@@ -335,19 +341,23 @@
 
   <section id="exam-screen" class="hidden">
     <header>
-      <span id="screen-exam-title" style="font-weight: 600;">Mock Exam</span>
+      <span id="screen-exam-title" class="brand">Mock Exam</span>
       <div class="timer-badge" id="clock-display">00:00:00</div>
       <button class="btn btn-danger" onclick="endTest(false)">Finish Test</button>
     </header>
 
     <div class="split-layout">
-      <div class="pdf-area" id="pdf-container"></div>
+      <div class="pdf-scroll-view" id="pdf-container">
+        <div id="pdf-loading-text" style="color: white; font-weight: 600; margin-top: 2rem;">
+          Rendering Question Paper...
+        </div>
+      </div>
 
       <aside class="sheet-panel">
         <div class="sheet-header">Answer Sheet</div>
         <div class="sheet-body" id="sheet-items"></div>
         <div class="sheet-footer">
-          <button class="btn btn-primary" onclick="endTest(false)">Submit Answers</button>
+          <button class="btn btn-primary" onclick="endTest(false)">Submit Exam</button>
         </div>
       </aside>
     </div>
@@ -356,7 +366,7 @@
   <main id="result-screen" class="setup-container hidden">
     <div class="setup-card" style="text-align: center;">
       <h1>Test Complete</h1>
-      <p>Summary of your mock test submission.</p>
+      <p>Performance overview of your mock test.</p>
 
       <div class="stat-grid">
         <div class="stat-card">
@@ -377,11 +387,14 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="location.reload()">Start New Test</button>
+      <button class="btn btn-primary" onclick="location.reload()">Start Another Test</button>
     </div>
   </main>
 
   <script>
+    // Set PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
     const PRESETS = {
       CSIR: { time: 180, q: 60, name: "CSIR NET" },
       GATE: { time: 180, q: 65, name: "GATE" },
@@ -406,8 +419,8 @@
       }
     }
 
-    // Process PDF and launch mock
-    document.getElementById("setup-form").addEventListener("submit", function (e) {
+    // Form submission & Canvas Render
+    document.getElementById("setup-form").addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const fileField = document.getElementById("file-chooser");
@@ -424,36 +437,57 @@
 
       const submitBtn = document.getElementById("start-btn");
       submitBtn.disabled = true;
-      submitBtn.textContent = "Loading PDF...";
+      submitBtn.textContent = "Loading Questions...";
 
-      // FileReader handles both local file:// testing and web protocols reliably
-      const reader = new FileReader();
-      reader.onload = function (evt) {
-        const fileDataUrl = evt.target.result;
-
-        // Render PDF directly inside an <embed> tag
-        const pdfContainer = document.getElementById("pdf-container");
-        pdfContainer.innerHTML = `
-          <embed src="${fileDataUrl}#toolbar=1&navpanes=0" type="application/pdf" width="100%" height="100%">
-        `;
-
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        
+        // Show test interface
         document.getElementById("screen-exam-title").textContent = examName;
         renderOMR(totalQs);
-
         document.getElementById("setup-screen").classList.add("hidden");
         document.getElementById("exam-screen").classList.remove("hidden");
 
+        // Render PDF directly to HTML5 Canvas
+        await renderPdfToCanvas(arrayBuffer);
         initClock(totalMins * 60);
-      };
-
-      reader.onerror = function () {
-        alert("Error loading PDF. Try using a standard, unencrypted PDF file.");
+      } catch (err) {
+        console.error(err);
+        alert("Error loading PDF: " + err.message);
         submitBtn.disabled = false;
         submitBtn.textContent = "Start Mock Exam";
-      };
-
-      reader.readAsDataURL(file);
+      }
     });
+
+    async function renderPdfToCanvas(arrayBuffer) {
+      const pdfContainer = document.getElementById("pdf-container");
+      pdfContainer.innerHTML = "";
+
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        
+        // Scale for mobile screens: Render crisp 1.5x resolution
+        const initialViewport = page.getViewport({ scale: 1 });
+        const screenWidth = Math.min(window.innerWidth, 800) - 24;
+        const scale = screenWidth / initialViewport.width;
+        const viewport = page.getViewport({ scale: Math.max(scale, 1.2) });
+
+        const canvas = document.createElement("canvas");
+        canvas.className = "pdf-page-canvas";
+        const context = canvas.getContext("2d");
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        pdfContainer.appendChild(canvas);
+
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
+      }
+    }
 
     function renderOMR(total) {
       const container = document.getElementById("sheet-items");
@@ -493,7 +527,6 @@
       const row = document.getElementById(`row-${qNum}`);
       const isSelected = userAnswers[qNum] === option;
 
-      // Clear previous selection
       ["A", "B", "C", "D"].forEach((opt) => {
         document.getElementById(`opt-${qNum}-${opt}`).classList.remove("active");
       });
